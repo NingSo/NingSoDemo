@@ -1,37 +1,42 @@
 package com.ningso.ningsodemo;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+
+import com.ningso.ningsodemo.base.BaseActivity;
+import com.ningso.ningsodemo.citylist.CityList;
 
 public class MainActivity extends BaseActivity {
+    TextView location_text;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        getSupportActionBar();
+        setContentView(R.layout.activity_home);
+
+        location_text = (TextView) findViewById(R.id.home_location_text);
+        location_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, CityList.class);
+                startActivityForResult(intent, 1);
+            }
+        });
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data != null)
+            switch (resultCode) {
+                case 2:
+                    location_text.setText(data.getStringExtra("city"));
+                    break;
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+                default:
+                    break;
+            }
     }
 }

@@ -1,4 +1,4 @@
-package com.ningso.ningsodemo;
+package com.ningso.ningsodemo.base;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+
+import com.ningso.ningsodemo.R;
 
 /**
  * Created by NingSo on 15/8/18.
