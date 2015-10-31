@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>
+        加载失败
+    </title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <style type="text/css">
+        *{ margin: 0;padding:0; font-family:Microsoft Yahei; } #content{ text-align:center;
+        margin-top:100px; } #content>span{ padding-top:18px;color:#999; }
+    </style>
+</head>
+
+<script type="text/javascript">
+        console.log("deviceID: " + window.localStorage.getItem("deviceID") + " success=" + cc);
+		function testlocalStorage() {
+			var item = window.localStorage.getItem("deviceID");
+			console.log("deviceID: " + item + " success=" + item);
+			alert(window.localStorage.getItem('deviceID'));
+		}
+
+</script>
+<body>
+<div id="content">
+    <h3 id="text">
+        This is cookie
+    </h3>
+    <br/>
+    <br/>
+    <a onclick="testlocalStorage()">
+        测试ReadStorage
+    </a>
+    <img id="test" src="file:///sdcard/download/aaa.jpeg" width="100%">
+    <img src="images/ic_error.gif" width="100%"/>
+    <br/>
+    <br/>
+    <span>网络出现问题,路飞都被打残了!!</span>
+</div>
+
+<div id="courseWare_dialog" class="hide">
+    <form role="form" class="form-horizontal " style="background:none;">
+        <div class="form-group">
+            <label class="col-sm-3 control-label no-padding-right">
+                上传文件：
+            </label>
+
+            <div class="col-sm-8">
+                <input type="file" id="resfile" name="resfile" accept="<%=aceptType%>"/>
+            </div>
+        </div>
+        <div class="clearfix no-margin">
+            <div class="col-md-9">
+                <a class="mybtn" onclick="uploadRes();">
+                    提交
+                </a>
+                &nbsp; &nbsp; &nbsp;
+                <a class="mybtn gely" onclick="$('#courseWare_dialog').dialog('close');">
+                    关闭
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+
+</html>
