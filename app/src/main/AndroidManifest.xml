@@ -3,15 +3,18 @@
     package="com.ningso.ningsodemo">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
+        android:name=".NingSoApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -23,6 +26,11 @@
         <activity
             android:name=".ui.WebViewActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.ListViewActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
     </application>
 
 </manifest>
