@@ -1,9 +1,9 @@
 package com.ningso.ningsodemo.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.RemoteException;
 import android.support.design.widget.FloatingActionButton;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,8 +12,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
+import com.morgoo.droidplugin.pm.PluginManager;
 import com.ningso.ningsodemo.R;
+import com.ningso.ningsodemo.utils.ILog;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -29,7 +34,24 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, WebViewActivity.class));
+                final File downloadFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                if (!downloadFile.exists() || !downloadFile.isDirectory()) {
+                    downloadFile.mkdirs();
+                }
+                final String filePath = downloadFile.getAbsolutePath() + "/1.apk";
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int result = 0;
+                        try {
+                            result = PluginManager.getInstance().installPackage(filePath, 0);
+                            ILog.e("result: " + result);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }).start();
             }
         });
 
