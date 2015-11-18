@@ -1,8 +1,7 @@
 package com.ningso.ningsodemo.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.RemoteException;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,11 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.morgoo.droidplugin.pm.PluginManager;
 import com.ningso.ningsodemo.R;
-import com.ningso.ningsodemo.utils.ILog;
-
-import java.io.File;
+import com.ningso.ningsodemo.TestPlugin.MyActivity;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -34,24 +30,25 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final File downloadFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                if (!downloadFile.exists() || !downloadFile.isDirectory()) {
-                    downloadFile.mkdirs();
-                }
-                final String filePath = downloadFile.getAbsolutePath() + "/1.apk";
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        int result = 0;
-                        try {
-                            result = PluginManager.getInstance().installPackage(filePath, 0);
-                            ILog.e("result: " + result);
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                }).start();
+                startActivity(new Intent(MainActivity.this, MyActivity.class));
+//                final File downloadFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+//                if (!downloadFile.exists() || !downloadFile.isDirectory()) {
+//                    downloadFile.mkdirs();
+//                }
+//                final String filePath = downloadFile.getAbsolutePath() + "/1.apk";
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        int result = 0;
+//                        try {
+//                            result = PluginManager.getInstance().installPackage(filePath, 0);
+//                            ILog.e("result: " + result);
+//                        } catch (RemoteException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                    }
+//                }).start();
             }
         });
 
@@ -88,10 +85,27 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_demo1:
+                startActivity(new Intent(MainActivity.this, WebViewActivity.class));
+                break;
+            case R.id.action_demo2:
+                startActivity(new Intent(MainActivity.this, MyActivity.class));
+                break;
+            case R.id.action_demo3:
+                break;
+            case R.id.action_demo4:
+                break;
+            case R.id.action_demo5:
+                break;
+            case R.id.action_demo6:
+                break;
+            case R.id.action_demo7:
+                break;
+            case R.id.action_demo8:
+                break;
+            default:
+                break;
         }
 
         return super.onOptionsItemSelected(item);
