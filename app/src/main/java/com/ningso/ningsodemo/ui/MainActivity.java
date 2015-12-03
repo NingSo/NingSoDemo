@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(MainActivity.this, MyActivity.class));
                 break;
             case R.id.action_demo3:
+                startActivity(new Intent(MainActivity.this, WifiScanActivity.class));
                 break;
             case R.id.action_demo4:
                 break;

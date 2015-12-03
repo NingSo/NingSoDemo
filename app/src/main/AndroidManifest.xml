@@ -27,6 +27,9 @@
             android:name=".ui.WebViewActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ui.WifiScanActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".TestPlugin.MyActivity"
             android:screenOrientation="portrait">
 
