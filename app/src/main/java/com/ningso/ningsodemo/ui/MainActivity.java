@@ -31,24 +31,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this, MyActivity.class));
-//                final File downloadFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-//                if (!downloadFile.exists() || !downloadFile.isDirectory()) {
-//                    downloadFile.mkdirs();
-//                }
-//                final String filePath = downloadFile.getAbsolutePath() + "/1.apk";
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        int result = 0;
-//                        try {
-//                            result = PluginManager.getInstance().installPackage(filePath, 0);
-//                            ILog.e("result: " + result);
-//                        } catch (RemoteException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                    }
-//                }).start();
             }
         });
 
