@@ -898,7 +898,7 @@ public class IPackageManagerHookHandle extends BaseHookHandle {
         protected void afterInvoke(Object receiver, Method method, Object[] args, Object invokeResult) throws Throwable {
             //ONLY FOR API 4.4_r1, 5.0.2_r1
         /*public List<ResolveInfo> queryIntentContentProviders(Intent intent, String resolvedType, int flags, int userId) throws RemoteException;*/
-            if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 if (args != null && invokeResult instanceof List) {
                     final int index0 = 0, index1 = 1, index2 = 2;
                     Intent intent = null;

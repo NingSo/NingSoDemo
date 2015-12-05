@@ -94,7 +94,7 @@ public class Log {
     }
 
     private static File getLogFile() {
-        File file = new File(Environment.getExternalStorageDirectory(), String.format("360Log/Plugin/Log_%s_%s.log", sFormat1.format(new Date()), Process.myPid()));
+        File file = new File(Environment.getExternalStorageDirectory(), String.format("360Log/Plugin/Log_%s_%s.log", sFormat1.format(new Date()), android.os.Process.myPid()));
         File dir = file.getParentFile();
         if (!dir.exists()) {
             dir.mkdirs();

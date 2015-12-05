@@ -232,7 +232,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
         protected boolean beforeInvoke(Object receiver, Method method, Object[] args) throws Throwable {
 
             RunningActivities.beforeStartActivity();
-            if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR2) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 //2.3
         /*public int startActivity(IApplicationThread caller,
             Intent intent, String resolvedType, Uri[] grantedUriPermissions,
@@ -420,7 +420,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
             Intent intent, String resolvedType, IVoiceInteractionSession session,
             IVoiceInteractor interactor, int flags, ProfilerInfo profilerInfo, Bundle options,
             int userId) throws RemoteException;*/
-            if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 final int index = 0;
                 if (args != null && args.length > index) {
                     if (args[index] != null && args[index] instanceof String) {
@@ -504,7 +504,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
        /*  public Intent registerReceiver(IApplicationThread caller, String callerPackage,
                 IIntentReceiver receiver, IntentFilter filter,
                 String requiredPermission, int userId) throws RemoteException;*/
-            if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 final int index = 1;
                 if (args != null && args.length > index) {
                     String callerPackage = (String) args[index];
@@ -1430,7 +1430,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
             boolean requireFull, String name, String callerPackage) throws RemoteException;*/
             //这个函数不知道是干嘛的
             //插件调用这个函数会传插件自己的包名，而此插件并未被安装。就这样调用原来函数传给系统，是会出问题的。所以改成宿主程序的包名。
-            if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 final int index = 6;
                 if (args != null && args.length > index) {
                     if (args[index] != null && args[index] instanceof String) {
@@ -1769,7 +1769,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
             Intent[] intents, String[] resolvedTypes, IBinder resultTo,
             Bundle options, int userId) throws RemoteException;*/
             //启动一坨Activity用的，用的比较少。不过为了保险起见也改改。
-            if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR2) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 int index = 1;
                 String callingPackage = null;
                 if (args != null && args.length > index && args[index] instanceof String) {
@@ -1807,7 +1807,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
                 }
 
 
-            } else if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 int index = 1;
                 if (args != null && args.length > index && args[index] != null && args[index] instanceof Intent[]) {
                     Intent[] intents = (Intent[]) args[index];
@@ -1845,7 +1845,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
              /* public int getPackageScreenCompatMode(String packageName) throws RemoteException;*/
             //我也不知道这个函数是干嘛的，不过既然写了，我们就改一下。
             //因为如果万一插件调用了这个函数，则会传插件自己的包名，而此插件并未被安装。就这样调用原来函数传给系统，是会出问题的。所以改成宿主程序的包名。
-            if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 final int index = 0;
                 if (args != null && args.length > index) {
                     if (args[index] != null && args[index] instanceof String) {
@@ -1873,7 +1873,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
             throws RemoteException;*/
             //我也不知道这个函数是干嘛的，不过既然写了，我们就改一下。
             //因为如果万一插件调用了这个函数，则会传插件自己的包名，而此插件并未被安装。就这样调用原来函数传给系统，是会出问题的。所以改成宿主程序的包名。
-            if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 final int index = 0;
                 if (args != null && args.length > index) {
                     if (args[index] != null && args[index] instanceof String) {
@@ -1901,7 +1901,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
              /* public boolean getPackageAskScreenCompat(String packageName) throws RemoteException;*/
             //我也不知道这个函数是干嘛的，不过既然写了，我们就改一下。
             //因为如果万一插件调用了这个函数，则会传插件自己的包名，而此插件并未被安装。就这样调用原来函数传给系统，是会出问题的。所以改成宿主程序的包名。
-            if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 final int index = 0;
                 if (args != null && args.length > index) {
                     if (args[index] != null && args[index] instanceof String) {
@@ -1929,7 +1929,7 @@ public class IActivityManagerHookHandle extends BaseHookHandle {
             throws RemoteException;*/
             //我也不知道这个函数是干嘛的，不过既然写了，我们就改一下。
             //因为如果万一插件调用了这个函数，则会传插件自己的包名，而此插件并未被安装。就这样调用原来函数传给系统，是会出问题的。所以改成宿主程序的包名。
-            if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 final int index = 0;
                 if (args != null && args.length > index) {
                     if (args[index] != null && args[index] instanceof String) {

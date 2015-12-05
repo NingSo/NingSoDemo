@@ -49,8 +49,10 @@ import com.morgoo.droidplugin.IPluginManager;
 import com.morgoo.droidplugin.PluginManagerService;
 import com.morgoo.droidplugin.reflect.MethodUtils;
 import com.morgoo.helper.Log;
+import com.morgoo.helper.compat.PackageManagerCompat;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -65,13 +67,23 @@ public class PluginManager implements ServiceConnection {
 
     public static final String ACTION_PACKAGE_ADDED = "com.morgoo.doirplugin.PACKAGE_ADDED";
     public static final String ACTION_PACKAGE_REMOVED = "com.morgoo.doirplugin.PACKAGE_REMOVED";
-    public static final int INSTALL_FAILED_NO_REQUESTEDPERMISSION = -100001;
+
+
+
+
+    public static final String EXTRA_PID = "com.morgoo.droidplugin.EXTRA_PID";
+    public static final String EXTRA_PACKAGENAME = "com.morgoo.droidplugin.EXTRA_EXTRA_PACKAGENAME";
 
     public static final String STUB_AUTHORITY_NAME = "com.morgoo.droidplugin_stub";
+    public static final String EXTRA_APP_PERSISTENT = "com.morgoo.droidplugin.EXTRA_APP_PERSISTENT";
+
+
+    public static final int INSTALL_FAILED_NO_REQUESTEDPERMISSION = -100001;
     public static final int STUB_NO_ACTIVITY_MAX_NUM = 4;
 
 
     private static final String TAG = PluginManager.class.getSimpleName();
+
 
     private Context mHostContext;
     private static PluginManager sInstance = null;
@@ -553,7 +565,7 @@ public class PluginManager implements ServiceConnection {
     public void clearApplicationUserData(String packageName, final Object observer/*android.content.pm.IPackageDataObserver*/) throws RemoteException {
         try {
             if (mPluginManager != null && packageName != null) {
-                mPluginManager.clearApplicationUserData(packageName, new com.morgoo.droidplugin.IPackageDataObserver.Stub() {
+                mPluginManager.clearApplicationUserData(packageName, new IPackageDataObserver.Stub() {
 
                     @Override
                     public void onRemoveCompleted(String packageName, boolean succeeded) throws RemoteException {
@@ -982,7 +994,7 @@ public class PluginManager implements ServiceConnection {
     public int getMyPid() throws RemoteException {
         try {
             if (mPluginManager != null) {
-               return mPluginManager.getMyPid();
+                return mPluginManager.getMyPid();
             } else {
                 Log.w(TAG, "Plugin Package Manager Service not be connect");
                 return -1;

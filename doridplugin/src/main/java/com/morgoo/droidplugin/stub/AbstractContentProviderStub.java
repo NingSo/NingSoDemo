@@ -72,7 +72,7 @@ public abstract class AbstractContentProviderStub extends ContentProvider {
     }
 
     private Uri buildNewUri(Uri uri, String targetAuthority) {
-        Builder b = new Builder();
+        Uri.Builder b = new Builder();
         b.scheme(uri.getScheme());
         b.authority(targetAuthority);
         b.path(uri.getPath());

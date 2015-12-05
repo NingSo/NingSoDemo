@@ -25,6 +25,7 @@ package com.morgoo.droidplugin.stub;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 
 import com.morgoo.helper.Log;
@@ -55,7 +56,9 @@ public abstract class AbstractServiceStub extends Service {
         super.onDestroy();
         isRunning = false;
         try {
-            sLock.notifyAll();
+            synchronized (sLock) {
+                sLock.notifyAll();
+            }
         } catch (Exception e) {
         }
     }
@@ -93,19 +96,23 @@ public abstract class AbstractServiceStub extends Service {
 
     private void startKillSelf() {
         if (isRunning) {
-            new Thread() {
-                @Override
-                public void run() {
-                    synchronized (sLock) {
-                        try {
-                            sLock.wait();
-                        } catch (InterruptedException e) {
+            try {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        synchronized (sLock) {
+                            try {
+                                sLock.wait();
+                            } catch (Exception e) {
+                            }
                         }
+                        Log.i(TAG, "doGc Kill Process(pid=%s,uid=%s has exit) for %s 2", android.os.Process.myPid(), android.os.Process.myUid(), getClass().getSimpleName());
+                        android.os.Process.killProcess(android.os.Process.myPid());
                     }
-                    Log.i(TAG, "doGc Kill Process(pid=%s,uid=%s has exit) for %s 2", android.os.Process.myPid(), android.os.Process.myUid(), getClass().getSimpleName());
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                }
-            }.start();
+                }.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

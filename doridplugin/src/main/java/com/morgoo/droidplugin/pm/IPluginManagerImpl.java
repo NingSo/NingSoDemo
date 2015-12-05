@@ -77,7 +77,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-
 /**
  * 此服务模仿系统的PackageManagerService，提供对插件简单的管理服务。
  * Created by Andy Zhang(zhangyong232@gmail.com) on 2015/2/12.
@@ -1351,12 +1350,12 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
     }
 
     @Override
-    public void onActivtyOnNewIntent(ActivityInfo stubInfo, ActivityInfo targetInfo, Intent intent) throws RemoteException {
+    public void onActivtyOnNewIntent(ActivityInfo stubInfo, ActivityInfo targetInfo, Intent intent) throws RemoteException{
         mActivityManagerService.onActivtyOnNewIntent(Binder.getCallingPid(), Binder.getCallingUid(), stubInfo, targetInfo, intent);
     }
 
     @Override
-    public int getMyPid() {
+    public int getMyPid(){
         return android.os.Process.myPid();
     }
 

@@ -105,7 +105,7 @@ public class IContentProviderInvokeHandle extends BaseHookHandle {
                     Uri uri = (Uri) args[index];
                     String authority = uri.getAuthority();
                     if (!TextUtils.equals(authority, mStubProvider.authority)) {
-                        Builder b = new Builder();
+                        Uri.Builder b = new Builder();
                         b.scheme(uri.getScheme());
                         b.authority(mStubProvider.authority);
                         b.path(uri.getPath());
