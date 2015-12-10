@@ -69,12 +69,10 @@ public class PluginManager implements ServiceConnection {
     public static final String ACTION_PACKAGE_REMOVED = "com.morgoo.doirplugin.PACKAGE_REMOVED";
 
 
-
-
     public static final String EXTRA_PID = "com.morgoo.droidplugin.EXTRA_PID";
     public static final String EXTRA_PACKAGENAME = "com.morgoo.droidplugin.EXTRA_EXTRA_PACKAGENAME";
 
-    public static final String STUB_AUTHORITY_NAME = "com.morgoo.droidplugin_stub";
+    public static final String STUB_AUTHORITY_NAME = "com.ningso.droidplugin_stub";
     public static final String EXTRA_APP_PERSISTENT = "com.morgoo.droidplugin.EXTRA_APP_PERSISTENT";
 
 
