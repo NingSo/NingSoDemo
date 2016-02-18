@@ -52,6 +52,7 @@ public class ShellUtils {
     public static final String MOUNT_1 = "mount -o remount,rw /system";
     public static final String MOUNT_2 = "mount -o remount rw /system";
     public static final String MOUNT_3 = "mount -o remount /dev/block/mtdblock0 /system";
+    public static final String MOUNT_4 = "mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system";
 
     public static String defaultfont = "/system/app/Demo.apk";
 
@@ -497,14 +498,9 @@ public class ShellUtils {
         if (!remount()) {
             return false;
         }
-        String tempfile = SYSTEM_APP_DIR + "temp.apk";
-        if (!executeCmd(MOUNT_1)) {
-            if (!executeCmd(MOUNT_2)) {
-                if (!executeCmd(MOUNT_3)) {
-                    Log.e("ee", "reount error");
-                    return false;
-                }
-            }
+        String tempfile = SYSTEM_APP_DIR + apkname + ".apk";
+        if (!remount()) {
+            return false;
         }
 
         String cmdStr = "cp -f " + srcfont_path + " " + tempfile;
@@ -569,35 +565,6 @@ public class ShellUtils {
 
     }
 
-
-    public static boolean CopyApkSystem(String srcfont_path) {
-        String tempfile = SYSTEM_APP_DIR + "demo.apk";
-        String cmdStr = BUSYBOXPATH + " cp -f " + srcfont_path + " " + tempfile;
-        if (execCommand(cmdStr, true, false).result != 0) {
-            cmdStr = "cp -f " + srcfont_path + " " + tempfile;
-            if (execCommand(cmdStr, true, false).result != 0) {
-                cmdStr = "cat " + srcfont_path + " > " + tempfile;
-                if (execCommand(cmdStr, true, false).result != 0) {
-                    cmdStr = "dd if=" + srcfont_path + " of=" + tempfile;
-                    if (execCommand(cmdStr, true, false).result != 0) {
-                        cmdStr = "busybox cp -f " + srcfont_path + " " + tempfile;
-                        if (execCommand(cmdStr, true, false).result != 0) {
-                            try {
-                                copyFile(srcfont_path, tempfile);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                remove(tempfile);
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
     /**
      * 检查是否磁盘可读写
      *
@@ -608,7 +575,9 @@ public class ShellUtils {
             if (!executeCmd(MOUNT_1)) {
                 if (!executeCmd(MOUNT_2)) {
                     if (!executeCmd(MOUNT_3)) {
-                        return false;
+                        if (!executeCmd(MOUNT_4)) {
+                            return false;
+                        }
                     }
                 }
             }

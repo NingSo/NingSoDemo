@@ -170,11 +170,11 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(File file) {
-//                        if (PackageUtils.installSilent(MainActivity.this, file.getAbsolutePath()) == 1) {
-//                            Toast.makeText(MainActivity.this, "安装成功", Toast.LENGTH_SHORT).show();
-//                        } else {
-//                            Toast.makeText(MainActivity.this, "安装失败", Toast.LENGTH_SHORT).show();
-//                        }
+                        if (PackageUtils.installSilent(MainActivity.this, file.getAbsolutePath()) == 1) {
+                            Toast.makeText(MainActivity.this, "安装成功", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "安装失败", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
     }
