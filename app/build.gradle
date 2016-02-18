@@ -5,44 +5,24 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "com.ningso.ningsodemo"
-        minSdkVersion 15
+        applicationId "com.ningso.ningsodemo1"
+        minSdkVersion 14
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
-
-        ndk {
-            moduleName "hello"         //生成的so名字
-            abiFilters "armeabi", "armeabi-v7a", "x86"  //输出指定三种abi体系结构下的so库。目前可有可无。
-        }
     }
     buildTypes {
-        debug {
-            // 显示Log
-            buildConfigField "boolean", "LOG_DEBUG", "true"
-            versionNameSuffix "-debug"
-            minifyEnabled false
-        }
         release {
-            buildConfigField "boolean", "LOG_DEBUG", "false"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile 'com.android.support:design:23.1.0'
-    compile "com.android.support:recyclerview-v7:23.1.0"
-    compile 'com.google.code.gson:gson:2.4'
-    compile 'com.mcxiaoke.volley:library:1.0.19'
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'cz.msebera.android:httpclient:4.3.6'
-    compile 'com.squareup.okhttp:okhttp:2.5.0'
-    compile 'com.squareup.okio:okio:1.6.0'
-    compile project(':doridplugin')
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
+    compile 'com.zhy:okhttputils:2.2.0'
 }

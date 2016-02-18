@@ -1,0 +1,53 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+    <item
+        android:id="@+id/action_demo1"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="获取Root"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo2"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="安装APK"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo3"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="获取安装"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo4"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="静默卸载"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo5"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="打开应用详情页"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo6"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="静默安装测试"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo7"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="Copy到System/app并静默"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_demo8"
+        android:icon="@drawable/ic_child_white_24dp"
+        android:orderInCategory="100"
+        android:title="系统是否ROOT"
+        app:showAsAction="ifRoom" />
+</menu>

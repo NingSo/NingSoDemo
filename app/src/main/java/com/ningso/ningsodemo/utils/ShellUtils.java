@@ -1,0 +1,694 @@
+package com.ningso.ningsodemo.utils;
+
+
+import android.content.Context;
+import android.os.Build;
+import android.os.Environment;
+import android.util.Log;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+
+/**
+ * ShellUtils
+ * <ul>
+ * <strong>Check root</strong>
+ * <li>{@link ShellUtils#checkRootPermission()}</li>
+ * </ul>
+ * <ul>
+ * <strong>Execte command</strong>
+ * <li>{@link ShellUtils#execCommand(String, boolean)}</li>
+ * <li>{@link ShellUtils#execCommand(String, boolean, boolean)}</li>
+ * <li>{@link ShellUtils#execCommand(List, boolean)}</li>
+ * <li>{@link ShellUtils#execCommand(List, boolean, boolean)}</li>
+ * <li>{@link ShellUtils#execCommand(String[], boolean)}</li>
+ * <li>{@link ShellUtils#execCommand(String[], boolean, boolean)}</li>
+ * </ul>
+ *
+ * @author <a href="http://www.trinea.cn" target="_blank">Trinea</a> 2013-5-16
+ */
+
+/**
+ * Created by NingSo on 16/2/16.下午9:01
+ *
+ * @author: NingSo
+ * @Email: ningdev@163.com
+ */
+public class ShellUtils {
+    public static final String COMMAND_SU = "su";
+    public static final String COMMAND_SH = "sh";
+    public static final String COMMAND_EXIT = "exit\n";
+    public static final String COMMAND_LINE_END = "\n";
+    public static String SYSTEM_APP_DIR = "/system/app/";
+
+    public static final String MOUNT_1 = "mount -o remount,rw /system";
+    public static final String MOUNT_2 = "mount -o remount rw /system";
+    public static final String MOUNT_3 = "mount -o remount /dev/block/mtdblock0 /system";
+
+    public static String defaultfont = "/system/app/Demo.apk";
+
+    public static String BUSYBOXPATH = "";
+    public static Process localProcess = null;
+    public static DataOutputStream dos = null;
+    public static DataInputStream in = null;
+    private static final String CHECK_CMD_END_TEXT = "--CHECK_CMD_END--";
+
+    private final static int kSystemRootStateUnknow = -1;
+    private final static int kSystemRootStateDisable = 0;
+    private final static int kSystemRootStateEnable = 1;
+    private static int systemRootState = kSystemRootStateUnknow;
+
+    /**
+     * 手机是否ROOT
+     *
+     * @return
+     */
+    public static boolean isRootSystem() {
+        if (systemRootState == kSystemRootStateEnable) {
+            return true;
+        } else if (systemRootState == kSystemRootStateDisable) {
+            return false;
+        }
+        File f;
+        final String kSuSearchPaths[] = {
+                "/system/bin/", "/system/xbin/", "/system/sbin/", "/sbin/", "/vendor/bin/"
+        };
+        try {
+            for (String kSuSearchPath : kSuSearchPaths) {
+                f = new File(kSuSearchPath + "su");
+                if (f.exists()) {
+                    systemRootState = kSystemRootStateEnable;
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        systemRootState = kSystemRootStateDisable;
+        return false;
+    }
+
+    /**
+     * 判断全局的process时候还在
+     *
+     * @return
+     */
+    private static boolean isSuProcessRunning() {
+        if (localProcess == null) {
+            return false;
+        }
+        boolean isRunning = false;
+        try {
+            localProcess.exitValue();
+        } catch (Exception e) {
+            isRunning = true;
+        }
+        if (!isRunning) {
+            return false;
+        }
+
+        boolean isPermitted = false;
+        try {
+            // 检测是否还有授权 -- Start
+            dos.writeBytes("echo " + CHECK_CMD_END_TEXT + "\n");
+            dos.flush();
+            String line = null;
+            boolean isFinish = false;
+
+            long waitTimeout = System.currentTimeMillis() + 5 * 1000;
+            while (System.currentTimeMillis() < waitTimeout) {
+                while (in.available() > 0
+                        && (line = in.readLine()) != null) {
+                    if (isPermissionDenied(line)) { // 授权失败
+                        isPermitted = false;
+                        isFinish = true;
+                    } else if (line.contains(CHECK_CMD_END_TEXT)) { // 授权成功
+                        isPermitted = true;
+                        isFinish = true;
+                    }
+                    if (isFinish) {
+                        break;
+                    }
+                }
+                if (isFinish) {
+                    break;
+                }
+            }
+
+            if (!isPermitted) {
+                releaseSuProcess();
+            }
+            // 检测是否还有授权 -- End
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return isPermitted;
+    }
+
+
+    /**
+     * 释放全局的process
+     */
+    public static synchronized void releaseSuProcess() {
+        if (dos != null) {
+            try {
+                dos.writeBytes("exit\n");
+                dos.flush();
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            dos = null;
+        }
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            in = null;
+        }
+        if (localProcess != null) {
+            try {
+                localProcess.destroy();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            localProcess = null;
+        }
+    }
+
+
+    private static boolean isPermissionDenied(String output) {
+        String str = output.toLowerCase();
+        return str.contains("permission denied") || str.contains("operation not permitted")
+                || str.contains("connect ui: timer expired") || str.contains("can't set uid 0")
+                || str.contains("can't set gid 0") || str.contains("no such tool");
+    }
+
+
+    private ShellUtils() {
+        throw new AssertionError();
+    }
+
+    /**
+     * check whether has root permission
+     *
+     * @return
+     */
+    public static boolean checkRootPermission() {
+        return execCommand("echo root", true, false).result == 0;
+    }
+
+    /**
+     * execute shell command, default return result msg
+     *
+     * @param command command
+     * @param isRoot  whether need to run with root
+     * @return
+     * @see ShellUtils#execCommand(String[], boolean, boolean)
+     */
+    public static CommandResult execCommand(String command, boolean isRoot) {
+        return execCommand(new String[]{command}, isRoot, true);
+    }
+
+    /**
+     * execute shell commands, default return result msg
+     *
+     * @param commands command list
+     * @param isRoot   whether need to run with root
+     * @return
+     * @see ShellUtils#execCommand(String[], boolean, boolean)
+     */
+    public static CommandResult execCommand(List<String> commands, boolean isRoot) {
+        return execCommand(commands == null ? null : commands.toArray(new String[]{}), isRoot, true);
+    }
+
+    /**
+     * execute shell commands, default return result msg
+     *
+     * @param commands command array
+     * @param isRoot   whether need to run with root
+     * @return
+     * @see ShellUtils#execCommand(String[], boolean, boolean)
+     */
+    public static CommandResult execCommand(String[] commands, boolean isRoot) {
+        return execCommand(commands, isRoot, true);
+    }
+
+    /**
+     * execute shell command
+     *
+     * @param command         command
+     * @param isRoot          whether need to run with root
+     * @param isNeedResultMsg whether need result msg
+     * @return
+     * @see ShellUtils#execCommand(String[], boolean, boolean)
+     */
+    public static CommandResult execCommand(String command, boolean isRoot, boolean isNeedResultMsg) {
+        return execCommand(new String[]{command}, isRoot, isNeedResultMsg);
+    }
+
+    /**
+     * execute shell commands
+     *
+     * @param commands        command list
+     * @param isRoot          whether need to run with root
+     * @param isNeedResultMsg whether need result msg
+     * @return
+     * @see ShellUtils#execCommand(String[], boolean, boolean)
+     */
+    public static CommandResult execCommand(List<String> commands, boolean isRoot, boolean isNeedResultMsg) {
+        return execCommand(commands == null ? null : commands.toArray(new String[]{}), isRoot, isNeedResultMsg);
+    }
+
+    /**
+     * execute shell commands
+     *
+     * @param commands        command array
+     * @param isRoot          whether need to run with root
+     * @param isNeedResultMsg whether need result msg
+     * @return <ul>
+     * <li>if isNeedResultMsg is false, {@link CommandResult#successMsg} is null and
+     * {@link CommandResult#errorMsg} is null.</li>
+     * <li>if {@link CommandResult#result} is -1, there maybe some excepiton.</li>
+     * </ul>
+     */
+    public static CommandResult execCommand(String[] commands, boolean isRoot, boolean isNeedResultMsg) {
+        int result = -1;
+        if (commands == null || commands.length == 0) {
+            return new CommandResult(result, null, null);
+        }
+
+        Process process = null;
+        BufferedReader successResult = null;
+        BufferedReader errorResult = null;
+        StringBuilder successMsg = null;
+        StringBuilder errorMsg = null;
+
+        DataOutputStream os = null;
+        try {
+            process = Runtime.getRuntime().exec(isRoot ? COMMAND_SU : COMMAND_SH);
+            os = new DataOutputStream(process.getOutputStream());
+            for (String command : commands) {
+                if (command == null) {
+                    continue;
+                }
+                os.write(command.getBytes());
+                os.writeBytes(COMMAND_LINE_END);
+                os.flush();
+            }
+            os.writeBytes(COMMAND_EXIT);
+            os.flush();
+
+            result = process.waitFor();
+            // get command result
+            if (isNeedResultMsg) {
+                successMsg = new StringBuilder();
+                errorMsg = new StringBuilder();
+                successResult = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                errorResult = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                String s;
+                while ((s = successResult.readLine()) != null) {
+                    successMsg.append(s);
+                }
+                while ((s = errorResult.readLine()) != null) {
+                    errorMsg.append(s);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (os != null) {
+                    os.close();
+                }
+                if (successResult != null) {
+                    successResult.close();
+                }
+                if (errorResult != null) {
+                    errorResult.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (process != null) {
+                process.destroy();
+            }
+        }
+        return new CommandResult(result, successMsg == null ? null : successMsg.toString(), errorMsg == null ? null
+                : errorMsg.toString());
+    }
+
+    /**
+     * result of command
+     * <ul>
+     * <li>{@link CommandResult#result} means result of command, 0 means normal, else means error, same to excute in
+     * linux shell</li>
+     * <li>{@link CommandResult#successMsg} means success message of command result</li>
+     * <li>{@link CommandResult#errorMsg} means error message of command result</li>
+     * </ul>
+     *
+     * @author <a href="http://www.trinea.cn" target="_blank">Trinea</a> 2013-5-16
+     */
+    public static class CommandResult {
+
+        /**
+         * result of command
+         **/
+        public int result;
+        /**
+         * success message of command result
+         **/
+        public String successMsg;
+        /**
+         * error message of command result
+         **/
+        public String errorMsg;
+
+        public CommandResult(int result) {
+            this.result = result;
+        }
+
+        public CommandResult(int result, String successMsg, String errorMsg) {
+            this.result = result;
+            this.successMsg = successMsg;
+            this.errorMsg = errorMsg;
+        }
+    }
+
+
+    /***
+     * @param cmdStr
+     * @return
+     */
+    public static boolean executeCmd(String cmdStr) {
+        boolean retValue = false;
+
+        cmdStr = getSDcardPath(cmdStr);
+        try {
+            if (!isSuProcessRunning()) {
+                if (!initSuProcess(0)) {
+                    return retValue;
+                }
+            }
+            String line;
+            dos.writeBytes(cmdStr + "\n");
+            dos.flush();
+            dos.writeBytes("echo magic-text $? \n");
+            dos.flush();
+            long waittimeout = System.currentTimeMillis() + 1000 * 5;
+            boolean isFinish = false;
+            while (System.currentTimeMillis() < waittimeout) {
+                while (in.available() > 0 && (line = in.readLine()) != null) {
+                    if (line.contains("permission denied") || line.contains("operation not permitted")
+                            || line.contains("connect ui: timer expired")
+                            || line.contains("not found") || line.contains("no such tool")) { // 授权失败
+                        return false;
+                    }
+                    if (line.contains("magic-text")) {
+                        String[] str = line.split(" ");
+                        if (str.length > 1 && "0".equals(str[1])) {
+                            retValue = true;
+                            return retValue;
+                        }
+                        DataInputStream errorin = new DataInputStream(localProcess.getErrorStream());
+                        String error = null;
+                        if ((!"0".equals(str[1])) && ((error = errorin.readLine()) == null || "".equals(error))) {
+                            retValue = true;
+                            return retValue;
+                        }
+                        isFinish = true;
+                        return retValue;
+                    }
+                }
+                if (isFinish) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            retValue = false;
+        }
+        return retValue;
+    }
+
+    private static boolean initSuProcess(long timeout) {
+        boolean isOk = true;
+        String cmd = "su";
+
+        try {
+            releaseSuProcess();
+            ProcessBuilder builder = new ProcessBuilder(cmd);
+            builder.redirectErrorStream(true);
+            localProcess = builder.start();
+            dos = new DataOutputStream(localProcess.getOutputStream());
+            in = new DataInputStream(localProcess.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            isOk = false;
+        }
+        return isOk;
+    }
+
+
+    public static String getSDcardPath(String str) {
+        if (Build.VERSION.SDK_INT >= 18) {
+            return str.replaceAll(Environment.getExternalStorageDirectory()
+                    .getPath(), "/mnt/sdcard");
+        } else {
+            return str;
+        }
+    }
+
+    public static void saveIncludedFileIntoFilesFolder(int resourceid,
+                                                       String filename, Context ApplicationContext) throws Exception {
+        InputStream is = ApplicationContext.getResources().openRawResource(
+                resourceid);
+        @SuppressWarnings("deprecation")
+        FileOutputStream fos = ApplicationContext.openFileOutput(filename,
+                Context.MODE_WORLD_READABLE);
+        byte[] bytebuf = new byte[1024];
+        int read;
+        while ((read = is.read(bytebuf)) >= 0) {
+            fos.write(bytebuf, 0, read);
+        }
+        is.close();
+        fos.getChannel().force(true);
+        fos.flush();
+        fos.close();
+    }
+
+    /**
+     * @return
+     */
+    public static boolean CopyApkSystem(String srcfont_path, String apkname) {
+        //remove file to system/app
+        if (!remount()) {
+            return false;
+        }
+        String tempfile = SYSTEM_APP_DIR + "temp.apk";
+        if (!executeCmd(MOUNT_1)) {
+            if (!executeCmd(MOUNT_2)) {
+                if (!executeCmd(MOUNT_3)) {
+                    Log.e("ee", "reount error");
+                    return false;
+                }
+            }
+        }
+
+        String cmdStr = "cp -f " + srcfont_path + " " + tempfile;
+        if (!executeCmd(cmdStr)) {
+            cmdStr = "cat " + srcfont_path + " > " + tempfile;
+            if (!executeCmd(cmdStr)) {
+                cmdStr = "dd if=" + srcfont_path + " of=" + tempfile;
+                if (!executeCmd(cmdStr)) {
+                    cmdStr = "busybox cp -f " + srcfont_path + " " + tempfile;
+                    if (!executeCmd(cmdStr)) {
+                        try {
+                            copyFile(srcfont_path, tempfile);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            remove(tempfile);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+        }
+        cmdStr = "chmod 644 " + tempfile;
+        if (!executeCmd(cmdStr)) {
+            remove(tempfile);
+            return false;
+        }
+        if (!rename(srcfont_path, tempfile, defaultfont)) {
+            remove(tempfile);
+            return false;
+        } else {
+            cmdStr = "rm -r " + tempfile;
+            executeCmd(cmdStr);
+            return true;
+        }
+    }
+
+    private static boolean rename(String srcFile, String oldname, String newname) {
+        if (checkFile(srcFile, oldname)) {
+            String cmdStr = "rename " + oldname + " " + newname;
+            if (!executeCmd(cmdStr)) {
+                cmdStr = "mv " + oldname + " " + newname;
+                if (!executeCmd(cmdStr)) {
+                    ////
+                    Log.e("E", "e");
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean checkFile(String srcFile, String desFile) {
+        File src = new File(srcFile);
+        File des = new File(desFile);
+        if (!(src.exists() && des.exists())) {
+            return false;
+        }
+        return src.length() == des.length();
+
+    }
+
+
+    public static boolean CopyApkSystem(String srcfont_path) {
+        String tempfile = SYSTEM_APP_DIR + "demo.apk";
+        String cmdStr = BUSYBOXPATH + " cp -f " + srcfont_path + " " + tempfile;
+        if (execCommand(cmdStr, true, false).result != 0) {
+            cmdStr = "cp -f " + srcfont_path + " " + tempfile;
+            if (execCommand(cmdStr, true, false).result != 0) {
+                cmdStr = "cat " + srcfont_path + " > " + tempfile;
+                if (execCommand(cmdStr, true, false).result != 0) {
+                    cmdStr = "dd if=" + srcfont_path + " of=" + tempfile;
+                    if (execCommand(cmdStr, true, false).result != 0) {
+                        cmdStr = "busybox cp -f " + srcfont_path + " " + tempfile;
+                        if (execCommand(cmdStr, true, false).result != 0) {
+                            try {
+                                copyFile(srcfont_path, tempfile);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                remove(tempfile);
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 检查是否磁盘可读写
+     *
+     * @return
+     */
+    public static boolean remount() {
+        if (!executeCmd(BUSYBOXPATH + " " + MOUNT_2)) {
+            if (!executeCmd(MOUNT_1)) {
+                if (!executeCmd(MOUNT_2)) {
+                    if (!executeCmd(MOUNT_3)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 移除文件
+     *
+     * @param path
+     * @return
+     */
+    private static boolean remove(String path) {
+        // if(!remount())
+        // return false;
+        String cmdStr = BUSYBOXPATH + " rm -r " + path;
+        if (!executeCmd(cmdStr)) {
+            cmdStr = "rm -r " + path;
+            executeCmd(cmdStr);
+        }
+        return true;
+    }
+
+
+    /**
+     * @param srcFile 源文件
+     * @param desFile 新建文件
+     * @throws Exception
+     */
+    public static void copyFile(String srcFile, String desFile) throws Exception {
+        if (srcFile != null && srcFile.trim().length() > 0) {
+            File src = new File(srcFile);
+            if (!src.exists()) {
+                throw new Exception("src file is not exists");
+            }
+            FileInputStream fis = null;
+            FileOutputStream fos = null;
+            boolean isEnough = src.length() > 100;
+            if (isEnough) { // 内存足够
+                try {
+                    File des = new File(desFile);
+                    if (!des.exists()) {
+                        des.createNewFile();
+                    }
+                    fis = new FileInputStream(srcFile);
+                    fos = new FileOutputStream(desFile);
+
+                    byte[] buffer = new byte[1024 * 100];
+                    int c = -1;
+                    while ((c = fis.read(buffer)) != -1) {
+                        fos.write(buffer, 0, c);
+                    }
+                    fos.flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    File file = new File(desFile);
+                    if (file.exists()) {
+                        file.deleteOnExit();
+                    }
+                    throw new Exception("IO Exception");
+                } finally {
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } else {
+                throw new Exception("memory not enough");
+            }
+        }
+    }
+}
