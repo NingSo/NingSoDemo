@@ -37,8 +37,6 @@ import java.io.File;
  * <ul>
  * <strong>Others</strong>
  * <li>{@link PackageUtils#getInstallLocation()} get system install location</li>
- * <li>{@link PackageUtils#isTopActivity(Context, String)} whether the app whost package's name is packageName is on the
- * top of the stack</li>
  * <li>{@link PackageUtils#startInstalledAppDetails(Context, String)} start InstalledAppDetails Activity</li>
  * </ul>
  *
@@ -453,7 +451,7 @@ public class PackageUtils {
      * can be set by System Menu Setting->Storage->Prefered install location
      *
      * @return
-     * @see {@link IPackageManager#getInstallLocation()}
+     * @see {@link PackageManager#}
      */
     public static int getInstallLocation() {
         ShellUtils.CommandResult commandResult = ShellUtils.execCommand(
