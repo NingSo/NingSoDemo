@@ -1,7 +1,8 @@
-package com.ningso.ningsodemo.utils;
+package com.ningso.silence;
 
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
@@ -48,13 +49,12 @@ public class ShellUtils {
     public static final String COMMAND_EXIT = "exit\n";
     public static final String COMMAND_LINE_END = "\n";
     public static String SYSTEM_APP_DIR = "/system/app/";
+    public static String SYSTEM_PRIV_APP_DIR = "/system/priv-app/";
 
     public static final String MOUNT_1 = "mount -o remount,rw /system";
     public static final String MOUNT_2 = "mount -o remount rw /system";
     public static final String MOUNT_3 = "mount -o remount /dev/block/mtdblock0 /system";
     public static final String MOUNT_4 = "mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system";
-
-    public static String defaultfont = "/system/app/Demo.apk";
 
     public static String BUSYBOXPATH = "";
     public static Process localProcess = null;
@@ -80,7 +80,11 @@ public class ShellUtils {
         }
         File f;
         final String kSuSearchPaths[] = {
-                "/system/bin/", "/system/xbin/", "/system/sbin/", "/sbin/", "/vendor/bin/"
+                "/system/bin/",
+                "/system/xbin/",
+                "/system/sbin/",
+                "/sbin/",
+                "/vendor/bin/"
         };
         try {
             for (String kSuSearchPath : kSuSearchPaths) {
@@ -388,19 +392,18 @@ public class ShellUtils {
         }
     }
 
-
     /***
+     * TODO
+     *
      * @param cmdStr
      * @return
      */
     public static boolean executeCmd(String cmdStr) {
-        boolean retValue = false;
-
         cmdStr = getSDcardPath(cmdStr);
         try {
             if (!isSuProcessRunning()) {
                 if (!initSuProcess(0)) {
-                    return retValue;
+                    return false;
                 }
             }
             String line;
@@ -409,39 +412,34 @@ public class ShellUtils {
             dos.writeBytes("echo magic-text $? \n");
             dos.flush();
             long waittimeout = System.currentTimeMillis() + 1000 * 5;
-            boolean isFinish = false;
             while (System.currentTimeMillis() < waittimeout) {
                 while (in.available() > 0 && (line = in.readLine()) != null) {
-                    if (line.contains("permission denied") || line.contains("operation not permitted")
+                    if (line.contains("permission denied")
+                            || line.contains("operation not permitted")
                             || line.contains("connect ui: timer expired")
-                            || line.contains("not found") || line.contains("no such tool")) { // 授权失败
+                            || line.contains("not found")
+                            || line.contains("no such tool")) { // 授权失败
                         return false;
                     }
                     if (line.contains("magic-text")) {
                         String[] str = line.split(" ");
                         if (str.length > 1 && "0".equals(str[1])) {
-                            retValue = true;
-                            return retValue;
+                            return true;
                         }
                         DataInputStream errorin = new DataInputStream(localProcess.getErrorStream());
-                        String error = null;
+                        String error;
                         if ((!"0".equals(str[1])) && ((error = errorin.readLine()) == null || "".equals(error))) {
-                            retValue = true;
-                            return retValue;
+                            return true;
                         }
-                        isFinish = true;
-                        return retValue;
+                        return false;
                     }
-                }
-                if (isFinish) {
-                    break;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            retValue = false;
+            return false;
         }
-        return retValue;
+        return false;
     }
 
     private static boolean initSuProcess(long timeout) {
@@ -472,13 +470,11 @@ public class ShellUtils {
         }
     }
 
-    public static void saveIncludedFileIntoFilesFolder(int resourceid,
-                                                       String filename, Context ApplicationContext) throws Exception {
-        InputStream is = ApplicationContext.getResources().openRawResource(
-                resourceid);
+    public static void saveIncludedFileIntoFilesFolder(int resourceid, String filename,
+                                                       Context ApplicationContext) throws Exception {
+        InputStream is = ApplicationContext.getResources().openRawResource(resourceid);
         @SuppressWarnings("deprecation")
-        FileOutputStream fos = ApplicationContext.openFileOutput(filename,
-                Context.MODE_WORLD_READABLE);
+        FileOutputStream fos = ApplicationContext.openFileOutput(filename, Context.MODE_WORLD_READABLE);
         byte[] bytebuf = new byte[1024];
         int read;
         while ((read = is.read(bytebuf)) >= 0) {
@@ -493,16 +489,21 @@ public class ShellUtils {
     /**
      * @return
      */
-    public static boolean CopyApkSystem(String srcfont_path, String apkname) {
-        //remove file to system/app
+    public static boolean CopyApkSystem(String srcfont_path) {
         if (!remount()) {
             return false;
         }
-        String tempfile = SYSTEM_APP_DIR + apkname + ".apk";
-        if (!remount()) {
+        if (srcfont_path == null) {
             return false;
         }
-
+        String tempfile;
+        String apkName = srcfont_path.substring(srcfont_path.lastIndexOf('/') + 1);
+        boolean hasPrivApp = chechFile();
+        if (hasPrivApp) {
+            tempfile = SYSTEM_PRIV_APP_DIR + apkName;
+        } else {
+            tempfile = SYSTEM_APP_DIR + apkName;
+        }
         String cmdStr = "cp -f " + srcfont_path + " " + tempfile;
         if (!executeCmd(cmdStr)) {
             cmdStr = "cat " + srcfont_path + " > " + tempfile;
@@ -521,22 +522,23 @@ public class ShellUtils {
                     }
                 }
             }
-
         }
-        cmdStr = "chmod 644 " + tempfile;
+        if (hasPrivApp) {
+            cmdStr = "chmod 755 " + tempfile;
+        } else {
+            cmdStr = "chmod 644 " + tempfile;
+        }
         if (!executeCmd(cmdStr)) {
             remove(tempfile);
             return false;
         }
-        if (!rename(srcfont_path, tempfile, defaultfont)) {
-            remove(tempfile);
-            return false;
-        } else {
-            cmdStr = "rm -r " + tempfile;
-            executeCmd(cmdStr);
-            return true;
-        }
+        return true;
     }
+
+    public static boolean copyFileToSystem() {
+        return false;
+    }
+
 
     private static boolean rename(String srcFile, String oldname, String newname) {
         if (checkFile(srcFile, oldname)) {
@@ -562,7 +564,23 @@ public class ShellUtils {
             return false;
         }
         return src.length() == des.length();
+    }
 
+    private static boolean chechFile() {
+        File src = new File(SYSTEM_PRIV_APP_DIR);
+        if (src.exists() || src.isDirectory()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取安装路径
+     *
+     * @return
+     */
+    public static String getInstallSilentDir() {
+        return chechFile() ? SYSTEM_PRIV_APP_DIR : SYSTEM_APP_DIR;
     }
 
     /**
@@ -659,5 +677,61 @@ public class ShellUtils {
                 throw new Exception("memory not enough");
             }
         }
+    }
+
+    public static void copyFile2SystemLib(String dirfile) {
+        try {
+            if (dirfile == null) {
+                return;
+            }
+            File file = new File(dirfile);
+            if (file.exists() && file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files.length > 0) {
+                    for (File child : files) {
+                        CopyFile(child);
+                    }
+                }
+                if (file.listFiles().length == 0) {
+                    CopyFile(file);
+                }
+            } else if (file.isFile()) {
+                CopyFile(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean CopyFile(File file) {
+        String srcfont_path;
+        String tempfile;
+        if (!file.exists() && !file.isFile()) {
+            return false;
+        }
+        srcfont_path = file.getAbsolutePath();
+        tempfile = "system/lib/" + file.getName();
+        String cmdStr = "cp -f " + srcfont_path + " " + tempfile;
+        if (!executeCmd(cmdStr)) {
+            cmdStr = "cat " + srcfont_path + " > " + tempfile;
+            if (!executeCmd(cmdStr)) {
+                cmdStr = "dd if=" + srcfont_path + " of=" + tempfile;
+                if (!executeCmd(cmdStr)) {
+                    cmdStr = "busybox cp -f " + srcfont_path + " " + tempfile;
+                    if (!executeCmd(cmdStr)) {
+                        try {
+                            copyFile(srcfont_path, tempfile);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            remove(tempfile);
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        cmdStr = "chmod 644 " + tempfile;
+        Log.e("ShellUtils", "src: " + srcfont_path + "\ntarget: " + tempfile + "\n----" + executeCmd(cmdStr) + "-----\n");
+        return executeCmd(cmdStr);
     }
 }

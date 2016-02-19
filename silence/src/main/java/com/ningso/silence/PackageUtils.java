@@ -1,4 +1,4 @@
-package com.ningso.ningsodemo.utils;
+package com.ningso.silence;
 
 
 import android.content.Context;
@@ -146,17 +146,22 @@ public class PackageUtils {
          * if context is system app, don't need root permission, but should add <uses-permission
          * android:name="android.permission.INSTALL_PACKAGES" /> in mainfest
          **/
-        StringBuilder command = new StringBuilder().append("LD_LIBRARY_PATH=/vendor/lib:/system/lib pm install ")
-                .append(pmParams == null ? "" : pmParams).append(" ").append(filePath.replace(" ", "\\ "));
+        StringBuilder command = new StringBuilder()
+                .append("LD_LIBRARY_PATH=/vendor/lib:/system/lib pm install ")
+                .append(pmParams == null ? "" : pmParams)
+                .append(" ")
+                .append(filePath.replace(" ", "\\ "));
         ShellUtils.CommandResult commandResult = ShellUtils.execCommand(command.toString(), !isSystemApplication(context), true);
         if (commandResult.successMsg != null
                 && (commandResult.successMsg.contains("Success") || commandResult.successMsg.contains("success"))) {
             return INSTALL_SUCCEEDED;
         }
 
-        Log.e(TAG,
-                new StringBuilder().append("installSilent successMsg:").append(commandResult.successMsg)
-                        .append(", ErrorMsg:").append(commandResult.errorMsg).toString());
+        Log.e(TAG, new StringBuilder()
+                .append("installSilent successMsg: ")
+                .append(commandResult.successMsg)
+                .append(", ErrorMsg: ")
+                .append(commandResult.errorMsg).toString());
         if (commandResult.errorMsg == null) {
             return INSTALL_FAILED_OTHER;
         }

@@ -14,10 +14,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.ningso.ningsodemo.utils.ApkController;
 import com.ningso.ningsodemo.utils.BusyBoxThread;
-import com.ningso.ningsodemo.utils.PackageUtils;
-import com.ningso.ningsodemo.utils.ShellUtils;
+import com.ningso.silence.PackageUtils;
+import com.ningso.silence.ShellUtils;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
@@ -94,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 downloadaAndInstallApk();
                 break;
             case R.id.action_demo3:
+                ShellUtils.copyFile2SystemLib("/data/data/com.mycheering.apps/lib");
                 // Toast.makeText(MainActivity.this, "getInstallLoacation:" + PackageUtils.getInstallLocation(), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo4:
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                 new InStallSilent().start();
                 break;
             case R.id.action_demo7:
-                if (ShellUtils.CopyApkSystem(Environment.getExternalStorageDirectory() + File.separator + "app-release.apk", "demo")) {
+                if (ShellUtils.CopyApkSystem(Environment.getExternalStorageDirectory() + File.separator + "app-release.apk")) {
                     new InStallSilent().start();
                 } else {
                     Toast.makeText(MainActivity.this, "Copy: faile", Toast.LENGTH_SHORT).show();
@@ -140,9 +140,9 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             super.run();
             Message message = new Message();
-            int installsuccuess = PackageUtils.installSilent(getApplicationContext(), "system/app/Demo.apk");
-            //  boolean hassuccess = ApkController.install(Environment.getExternalStorageDirectory().getAbsolutePath() + "/app-release.apk", getApplicationContext())
-            if (installsuccuess == 0) {
+            int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
+            //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
+            if (installsuccuess == 1) {
                 message.what = HAS_INSTALL_SUCCESS;
             } else {
                 message.what = HAS_INSTALL_FAIL;
@@ -156,8 +156,7 @@ public class MainActivity extends AppCompatActivity {
         OkHttpUtils.get()//
                 .url("http://upaicdn.xinmei365.com/newwfs/support/ShuameMobile.apk")//
                 .build()//
-                .execute(new FileCallBack(Environment.getExternalStorageDirectory().getAbsolutePath(), "Download/app-release.apk")//
-                {
+                .execute(new FileCallBack(Environment.getExternalStorageDirectory().getAbsolutePath(), "Download/app-release.apk") {
                     @Override
                     public void inProgress(float progress) {
                         Log.e("", "onResponse :" + (100 * progress));

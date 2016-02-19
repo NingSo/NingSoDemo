@@ -7,12 +7,6 @@ import android.net.Uri;
 import java.io.File;
 import java.io.PrintWriter;
 
-/**
- * Created by NingSo on 16/2/18.下午2:58
- *
- * @author: NingSo
- * @Email: ningdev@163.com
- */
 public class ApkController {
     public static boolean install(String apkPath, Context context) {
         // 先判断手机是否有root权限
