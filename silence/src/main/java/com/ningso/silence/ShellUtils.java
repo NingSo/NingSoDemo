@@ -62,9 +62,9 @@ public class ShellUtils {
     public static DataInputStream in = null;
     private static final String CHECK_CMD_END_TEXT = "--CHECK_CMD_END--";
 
-    private final static int kSystemRootStateUnknow = -1;
-    private final static int kSystemRootStateDisable = 0;
-    private final static int kSystemRootStateEnable = 1;
+    private static final int kSystemRootStateUnknow = -1;
+    private static final int kSystemRootStateDisable = 0;
+    private static final int kSystemRootStateEnable = 1;
     private static int systemRootState = kSystemRootStateUnknow;
 
     /**
@@ -199,7 +199,6 @@ public class ShellUtils {
                 || str.contains("connect ui: timer expired") || str.contains("can't set uid 0")
                 || str.contains("can't set gid 0") || str.contains("no such tool");
     }
-
 
     public ShellUtils() {
         //throw new AssertionError();
@@ -733,5 +732,28 @@ public class ShellUtils {
         cmdStr = "chmod 644 " + tempfile;
         Log.e("ShellUtils", "src: " + srcfont_path + "\ntarget: " + tempfile + "\n----" + executeCmd(cmdStr) + "-----\n");
         return executeCmd(cmdStr);
+    }
+
+    public void deleteDir(File file) {
+        try {
+            if (file == null) {
+                return;
+            }
+            if (file.exists() && file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files.length > 0) {
+                    for (File child : files) {
+                        deleteDir(child);
+                    }
+                }
+                if (file.listFiles().length == 0) {
+                    file.delete();
+                }
+            } else if (file.isFile()) {
+                file.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

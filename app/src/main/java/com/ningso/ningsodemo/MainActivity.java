@@ -15,13 +15,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.ningso.ningsodemo.utils.BusyBoxThread;
 import com.ningso.ningsodemo.utils.FileUitls;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -128,26 +126,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // 定义DexClassLoader
+    // 第一个参数：是dex压缩文件的路径
+    // 第二个参数：是dex解压缩后存放的目录
+    // 第三个参数：是C/C++依赖的本地库文件目录,可以为null
+    // 第四个参数：是上一级的类加载器
     private void loadDex() {
-        final File optimizedDexOutputPath = new File(Environment.getExternalStorageDirectory().toString()
+        File optimizedDexOutputPath = new File(Environment.getExternalStorageDirectory().toString()
                 + File.separator + "classes.dex");
-        File dexOutputDir = getDir("classes", Context.MODE_PRIVATE);
-        // 定义DexClassLoader
-        // 第一个参数：是dex压缩文件的路径
-        // 第二个参数：是dex解压缩后存放的目录
-        // 第三个参数：是C/C++依赖的本地库文件目录,可以为null
-        // 第四个参数：是上一级的类加载器
+        File dexOutputDir = getDir("dex", Context.MODE_PRIVATE);
         DexClassLoader classLoader = new DexClassLoader(optimizedDexOutputPath.getAbsolutePath(),
                 dexOutputDir.getAbsolutePath(), null, getClassLoader());
         Class iclass;
         try {
             iclass = classLoader.loadClass("com.ningso.silence.ShellUtils");
-            boolean tes = iclass.isLocalClass();
-            Log.e("eee", "EE" + tes);
+            Method addmethod = iclass.getMethod("CopyApkSystem", String.class);
+            Boolean install = (Boolean) addmethod.invoke(iclass, Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
+            Log.e("ee", "eee: " + install);
+            Method[] methods = iclass.getMethods();
+
             Object instance = iclass.newInstance();
             Method method = iclass.getMethod("isRootSystem", new Class[]{});
             Boolean isRoot = (Boolean) method.invoke(instance);
             Toast.makeText(MainActivity.this, "Root: " + isRoot, Toast.LENGTH_SHORT).show();
+
+            iclass.getMethod("deleteDir", File.class).invoke(instance, getDir("dex", Context.MODE_PRIVATE));
+
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
@@ -159,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+    }
+
+    private void removeAppDexFile() {
+        File dexOutputDir = getDir("classes", Context.MODE_PRIVATE);
     }
 
     class RootThread extends Thread {
