@@ -1,5 +1,6 @@
 package com.ningso.ningsodemo;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -15,13 +16,16 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.ningso.ningsodemo.utils.BusyBoxThread;
-import com.ningso.silence.PackageUtils;
-import com.ningso.silence.ShellUtils;
+import com.ningso.ningsodemo.utils.FileUitls;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
+import dalvik.system.DexClassLoader;
 import okhttp3.Call;
 
 public class MainActivity extends AppCompatActivity {
@@ -70,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        new BusyBoxThread(getApplication()).start();
+        //new BusyBoxThread(getApplication()).start();
     }
 
     @Override
@@ -87,38 +91,74 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_demo1:
-                new RootThread().start();
+                // new RootThread().start();
+                FileUitls.CopyAssertJarToFile(this, "silence.jar", "silence.jar");
                 break;
             case R.id.action_demo2:
-                downloadaAndInstallApk();
+                //  downloadaAndInstallApk();
+                loadDex();
                 break;
             case R.id.action_demo3:
-                ShellUtils.copyFile2SystemLib("/data/data/com.mycheering.apps/lib");
+                //  ShellUtils.copyFile2SystemLib("/data/data/com.mycheering.apps/lib");
                 // Toast.makeText(MainActivity.this, "getInstallLoacation:" + PackageUtils.getInstallLocation(), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo4:
                 // Toast.makeText(MainActivity.this, "UnSilentInstall:" + PackageUtils.uninstallSilent(getApplicationContext(), "com.ningso.redenvelope", false), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo5:
-                PackageUtils.startInstalledAppDetails(getApplicationContext(), "com.ningso.redenvelope");
+                //  PackageUtils.startInstalledAppDetails(getApplicationContext(), "com.ningso.redenvelope");
                 break;
             case R.id.action_demo6:
                 new InStallSilent().start();
                 break;
             case R.id.action_demo7:
-                if (ShellUtils.CopyApkSystem(Environment.getExternalStorageDirectory() + File.separator + "app-release.apk")) {
-                    new InStallSilent().start();
-                } else {
-                    Toast.makeText(MainActivity.this, "Copy: faile", Toast.LENGTH_SHORT).show();
-                }
+//                if (ShellUtils.CopyApkSystem(Environment.getExternalStorageDirectory() + File.separator + "app-release.apk")) {
+//                    new InStallSilent().start();
+//                } else {
+//                    Toast.makeText(MainActivity.this, "Copy: faile", Toast.LENGTH_SHORT).show();
+//                }
                 break;
             case R.id.action_demo8:
-                Toast.makeText(MainActivity.this, "Root: " + ShellUtils.isRootSystem(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, "Root: " + ShellUtils.isRootSystem(), Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private void loadDex() {
+        final File optimizedDexOutputPath = new File(Environment.getExternalStorageDirectory().toString()
+                + File.separator + "classes.dex");
+        File dexOutputDir = getDir("classes", Context.MODE_PRIVATE);
+        // 定义DexClassLoader
+        // 第一个参数：是dex压缩文件的路径
+        // 第二个参数：是dex解压缩后存放的目录
+        // 第三个参数：是C/C++依赖的本地库文件目录,可以为null
+        // 第四个参数：是上一级的类加载器
+        DexClassLoader classLoader = new DexClassLoader(optimizedDexOutputPath.getAbsolutePath(),
+                dexOutputDir.getAbsolutePath(), null, getClassLoader());
+        Class iclass;
+        try {
+            iclass = classLoader.loadClass("com.ningso.silence.ShellUtils");
+            boolean tes = iclass.isLocalClass();
+            Log.e("eee", "EE" + tes);
+            Object instance = iclass.newInstance();
+            Method method = iclass.getMethod("isRootSystem", new Class[]{});
+            Boolean isRoot = (Boolean) method.invoke(instance);
+            Toast.makeText(MainActivity.this, "Root: " + isRoot, Toast.LENGTH_SHORT).show();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     class RootThread extends Thread {
@@ -139,16 +179,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             super.run();
-            Message message = new Message();
-            int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
-            //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
-            if (installsuccuess == 1) {
-                message.what = HAS_INSTALL_SUCCESS;
-            } else {
-                message.what = HAS_INSTALL_FAIL;
-            }
-            //   Log.e("DEBUG", "installsuccuess:" + installsuccuess);
-            handler.sendMessage(message);
+//            Message message = new Message();
+//            int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
+//            //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
+//            if (installsuccuess == 1) {
+//                message.what = HAS_INSTALL_SUCCESS;
+//            } else {
+//                message.what = HAS_INSTALL_FAIL;
+//            }
+//            //   Log.e("DEBUG", "installsuccuess:" + installsuccuess);
+//            handler.sendMessage(message);
         }
     }
 
@@ -169,11 +209,11 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(File file) {
-                        if (PackageUtils.installSilent(MainActivity.this, file.getAbsolutePath()) == 1) {
-                            Toast.makeText(MainActivity.this, "安装成功", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(MainActivity.this, "安装失败", Toast.LENGTH_SHORT).show();
-                        }
+//                        if (PackageUtils.installSilent(MainActivity.this, file.getAbsolutePath()) == 1) {
+//                            Toast.makeText(MainActivity.this, "安装成功", Toast.LENGTH_SHORT).show();
+//                        } else {
+//                            Toast.makeText(MainActivity.this, "安装失败", Toast.LENGTH_SHORT).show();
+//                        }
                     }
                 });
     }

@@ -2,11 +2,6 @@ package com.ningso.ningsodemo.utils;
 
 import android.content.Context;
 
-import com.ningso.ningsodemo.R;
-import com.ningso.silence.ShellUtils;
-
-import java.io.File;
-
 /**
  * Created by NingSo on 16/2/17.下午5:05
  *
@@ -22,17 +17,17 @@ public class BusyBoxThread extends Thread {
     }
 
     public void run() {
-        try {
-            ShellUtils.BUSYBOXPATH = this.ctx.getFilesDir().getAbsolutePath() + "/busybox";
-            File file = new File(ShellUtils.BUSYBOXPATH);
-            if (file.exists()) {
-                return;
-            }
-            ShellUtils.saveIncludedFileIntoFilesFolder(R.raw.busybox, "busybox", this.ctx);
-            Thread.sleep(4000);
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
+//        try {
+//            ShellUtils.BUSYBOXPATH = this.ctx.getFilesDir().getAbsolutePath() + "/busybox";
+//            File file = new File(ShellUtils.BUSYBOXPATH);
+//            if (file.exists()) {
+//                return;
+//            }
+//            ShellUtils.saveIncludedFileIntoFilesFolder(R.raw.busybox, "busybox", this.ctx);
+//            Thread.sleep(4000);
+//        } catch (Exception e1) {
+//            e1.printStackTrace();
+//        }
 
     }
 }

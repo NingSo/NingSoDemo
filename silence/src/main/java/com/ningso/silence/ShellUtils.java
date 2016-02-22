@@ -72,7 +72,7 @@ public class ShellUtils {
      *
      * @return
      */
-    public static boolean isRootSystem() {
+    public boolean isRootSystem() {
         if (systemRootState == kSystemRootStateEnable) {
             return true;
         } else if (systemRootState == kSystemRootStateDisable) {
@@ -201,8 +201,8 @@ public class ShellUtils {
     }
 
 
-    private ShellUtils() {
-        throw new AssertionError();
+    public ShellUtils() {
+        //throw new AssertionError();
     }
 
     /**

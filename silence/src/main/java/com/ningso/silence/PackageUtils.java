@@ -46,8 +46,12 @@ public class PackageUtils {
 
     public static final String TAG = "PackageUtils";
 
-    private PackageUtils() {
-        throw new AssertionError();
+//    public PackageUtils() {
+//        throw new AssertionError();
+//    }
+
+
+    public PackageUtils() {
     }
 
     /**
@@ -134,7 +138,6 @@ public class PackageUtils {
         if (filePath == null || filePath.length() == 0) {
             return INSTALL_FAILED_INVALID_URI;
         }
-
         File file = new File(filePath);
         if (file == null || file.length() <= 0 || !file.exists() || !file.isFile()) {
             return INSTALL_FAILED_INVALID_URI;
