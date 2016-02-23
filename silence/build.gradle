@@ -25,28 +25,21 @@ dependencies {
 
 task makeJar(type: Copy) {
     delete 'build/libs/silence.jar'
+    delete 'build/libs/classes.dex'
     from('build/intermediates/bundles/release/')
     into('build/libs/')
     include('classes.jar')
     rename('classes.jar', 'silence.jar')
-//    doLast {
-//        description 'make jar to dex file'
-//        exec {
-//            commandLine "dx", "--dex", "--output=build/libs/classes.dex", "build/libs/silence.jar"
-//        }
- //   }
-}
-
-makeJar.dependsOn(build)
-
-task runDebug(dependsOn: 'makeJar') {
-    description 'Runs the debug-flavour of the app on the connected device'
     doLast {
+        description 'make jar to dex file'
         exec {
-            commandLine "$dx", "--dex", "--output=build/libs/classes.dex", "build/libs/silence.jar"
+            def pFile = file("$rootDir/local.properties")
+            Properties p = new Properties()
+            p.load(pFile.newDataInputStream())
+            commandLine p.getProperty('sdk.dir') + "/build-tools/23.0.2/dx",
+                    "--dex", "--output=build/libs/classes.dex", "build/libs/silence.jar"
         }
     }
 }
-
-//在终端执行生成JAR包
+makeJar.dependsOn(build)
 // gradlew makeJar
