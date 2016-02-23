@@ -15,13 +15,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.ningso.ningsodemo.utils.DexClassLoadProxy;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 
-import dalvik.system.DexClassLoader;
 import okhttp3.Call;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int HAS_ROOT_FAIL = 0x0002;
     private static final int HAS_INSTALL_SUCCESS = 0x0003;
     private static final int HAS_INSTALL_FAIL = 0x0004;
-    private DexClassLoader classLoader;
-
 
     public Handler handler = new Handler() {
         @Override
@@ -83,36 +80,42 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_demo1:
-                Boolean hasRoot = (Boolean) executeClass("com.ningso.silence.ShellUtils", "isRootSystem", false);
-                Toast.makeText(MainActivity.this, "CopyApkSystem:" + hasRoot, Toast.LENGTH_SHORT).show();
+                Boolean hasRoot = (Boolean) DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.ShellUtils", "isRootSystem", false);
+                Toast.makeText(MainActivity.this, "hasRoot:" + hasRoot, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo2:
-                Boolean results = (Boolean) executeClass("com.ningso.silence.ShellUtils", "CopyApkSystem", true,
-                        Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
-                Toast.makeText(MainActivity.this, "CopyApkSystem:" + results, Toast.LENGTH_SHORT).show();
+                Boolean results = (Boolean) DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.ShellUtils", "CopyApkToSystem", true,
+                                Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
+                Toast.makeText(MainActivity.this, "CopyApkToSystem:" + results, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo3:
-                int installLoacation = (int) executeClass("com.ningso.silence.PackageUtils", "getInstallLocation", true);
+                int installLoacation = (int) DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.PackageUtils", "getInstallLocation", true);
                 //  ShellUtils.copyFile2SystemLib("/data/data/com.mycheering.apps/lib");
                 Toast.makeText(MainActivity.this, "getInstallLoacation:" + installLoacation, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo4:
-                int uninstallSilent = (int) executeClass("com.ningso.silence.PackageUtils", "uninstallSilent", true,
-                        getApplicationContext(), "com.ningso.redenvelope", false);
+                int uninstallSilent = (int) DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.PackageUtils", "uninstallSilent", true,
+                                getApplicationContext(), "com.ningso.redenvelope", false);
 
                 Toast.makeText(MainActivity.this, "uninstallSilent:" + uninstallSilent, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo5:
-                executeClass("com.ningso.silence.PackageUtils", "startInstalledAppDetails", true,
-                        getApplicationContext(), "com.ningso.redenvelope");
+                DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.PackageUtils", "startInstalledAppDetails", true,
+                                getApplicationContext(), "com.ningso.redenvelope");
                 //  PackageUtils.startInstalledAppDetails(getApplicationContext(), "com.ningso.redenvelope");
                 break;
             case R.id.action_demo6:
                 new InStallSilent().start();
                 break;
             case R.id.action_demo7:
-                Boolean results7 = (Boolean) executeClass("com.ningso.silence.ShellUtils", "CopyApkSystem", true,
-                        Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
+                Boolean results7 = (Boolean) DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.ShellUtils", "CopyApkToSystem", true,
+                                Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
                 if (results7) {
                     new InStallSilent().start();
                 } else {
@@ -125,7 +128,9 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 break;
             case R.id.action_demo8:
-                executeClass("com.ningso.silence.ShellUtils", "deleteDir", false, getDir("dex", Context.MODE_PRIVATE));
+                DexClassLoadProxy.getInstance()
+                        .executeClass("com.ningso.silence.ShellUtils", "deleteDir", false,
+                                getDir("dex", Context.MODE_PRIVATE));
                 break;
             default:
                 break;
@@ -133,81 +138,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    // 定义DexClassLoader
-    // 第一个参数：是dex压缩文件的路径
-    // 第二个参数：是dex解压缩后存放的目录
-    // 第三个参数：是C/C++依赖的本地库文件目录,可以为null
-    // 第四个参数：是上一级的类加载器
-    private DexClassLoader getDexClassLoader() {
-        if (classLoader == null) {
-            File optimizedDexOutputPath = new File(Environment.getExternalStorageDirectory().toString()
-                    + File.separator + "classes.dex");
-            File dexOutputDir = getDir("dex", Context.MODE_PRIVATE);
-            classLoader = new DexClassLoader(optimizedDexOutputPath.getAbsolutePath(),
-                    dexOutputDir.getAbsolutePath(), null, getClassLoader());
-        }
-        return classLoader;
-    }
-
-    /**
-     * 加载DexloadClass里面的方法
-     *
-     * @param classStr   类名
-     * @param methodStr  方法名
-     * @param staticMeth 是否是静态方法
-     * @param args       参数数组
-     * @return
-     */
-    private Object executeClass(String classStr, String methodStr, boolean staticMeth, Object... args) {
-        Class iclass;
-        Object instance;
-        Object result = null;
-        try {
-            iclass = getDexClassLoader().loadClass(classStr);
-            instance = iclass.newInstance();
-            if (args.length != 0) {
-                Class[] params = new Class[args.length];
-                for (int i = 0; i < args.length; i++) {
-                    if (args[i] instanceof Context) {
-                        params[i] = Context.class;
-                    } else if (args[i] instanceof Boolean) {
-                        params[i] = Boolean.TYPE;
-                    } else if (args[i] instanceof Integer) {
-                        params[i] = Integer.TYPE;
-                    } else if (args[i] instanceof Character) {
-                        params[i] = Character.TYPE;
-                    } else {
-                        params[i] = args[i].getClass();
-                    }
-                }
-                if (staticMeth) {
-                    result = iclass.getMethod(methodStr, params).invoke(iclass, args);
-                } else {
-                    result = iclass.getMethod(methodStr, params).invoke(instance, args);
-                }
-            } else {
-                if (staticMeth) {
-                    result = iclass.getMethod(methodStr, new Class[]{}).invoke(iclass);
-                } else {
-                    result = iclass.getMethod(methodStr, new Class[]{}).invoke(instance);
-                }
-            }
-
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } finally {
-            return result;
-        }
-    }
 
     class RootThread extends Thread {
         @Override
@@ -229,9 +159,9 @@ public class MainActivity extends AppCompatActivity {
             super.run();
             Message message = new Message();
             int installsuccuess = 0;
-            String installpath = (String) executeClass("com.ningso.silence.ShellUtils", "getInstallSilentDir", true);
+            String installpath = (String) DexClassLoadProxy.getInstance().executeClass("com.ningso.silence.ShellUtils", "getInstallSilentDir", true);
             if (installpath != null) {
-                installsuccuess = (int) executeClass("com.ningso.silence.PackageUtils", "installSilent", true, getApplicationContext(), installpath + "app-release.apk");
+                installsuccuess = (int) DexClassLoadProxy.getInstance().executeClass("com.ningso.silence.PackageUtils", "installSilent", true, getApplicationContext(), installpath + "app-release.apk");
             }
             // int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
             //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
@@ -261,11 +191,6 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(File file) {
-//                        if (PackageUtils.installSilent(MainActivity.this, file.getAbsolutePath()) == 1) {
-//                            Toast.makeText(MainActivity.this, "安装成功", Toast.LENGTH_SHORT).show();
-//                        } else {
-//                            Toast.makeText(MainActivity.this, "安装失败", Toast.LENGTH_SHORT).show();
-//                        }
                     }
                 });
     }

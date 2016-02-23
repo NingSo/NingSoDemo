@@ -29,8 +29,24 @@ task makeJar(type: Copy) {
     into('build/libs/')
     include('classes.jar')
     rename('classes.jar', 'silence.jar')
+//    doLast {
+//        description 'make jar to dex file'
+//        exec {
+//            commandLine "dx", "--dex", "--output=build/libs/classes.dex", "build/libs/silence.jar"
+//        }
+ //   }
 }
 
 makeJar.dependsOn(build)
+
+task runDebug(dependsOn: 'makeJar') {
+    description 'Runs the debug-flavour of the app on the connected device'
+    doLast {
+        exec {
+            commandLine "$dx", "--dex", "--output=build/libs/classes.dex", "build/libs/silence.jar"
+        }
+    }
+}
+
 //在终端执行生成JAR包
 // gradlew makeJar
