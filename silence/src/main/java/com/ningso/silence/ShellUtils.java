@@ -2,7 +2,6 @@ package com.ningso.silence;
 
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
@@ -44,22 +43,23 @@ import java.util.List;
  * @Email: ningdev@163.com
  */
 public class ShellUtils {
-    public static final String COMMAND_SU = "su";
-    public static final String COMMAND_SH = "sh";
-    public static final String COMMAND_EXIT = "exit\n";
-    public static final String COMMAND_LINE_END = "\n";
-    public static String SYSTEM_APP_DIR = "/system/app/";
-    public static String SYSTEM_PRIV_APP_DIR = "/system/priv-app/";
 
-    public static final String MOUNT_1 = "mount -o remount,rw /system";
-    public static final String MOUNT_2 = "mount -o remount rw /system";
-    public static final String MOUNT_3 = "mount -o remount /dev/block/mtdblock0 /system";
-    public static final String MOUNT_4 = "mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system";
+    private static final String COMMAND_SU = "su";
+    private static final String COMMAND_SH = "sh";
+    private static final String COMMAND_EXIT = "exit\n";
+    private static final String COMMAND_LINE_END = "\n";
+    private static String SYSTEM_APP_DIR = "/system/app/";
+    private static String SYSTEM_PRIV_APP_DIR = "/system/priv-app/";
 
-    public static String BUSYBOXPATH = "";
-    public static Process localProcess = null;
-    public static DataOutputStream dos = null;
-    public static DataInputStream in = null;
+    private static final String MOUNT_1 = "mount -o remount,rw /system";
+    private static final String MOUNT_2 = "mount -o remount rw /system";
+    private static final String MOUNT_3 = "mount -o remount /dev/block/mtdblock0 /system";
+    private static final String MOUNT_4 = "mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system";
+
+    private static String BUSYBOXPATH = "";
+    private static Process localProcess = null;
+    private static DataOutputStream dos = null;
+    private static DataInputStream in = null;
     private static final String CHECK_CMD_END_TEXT = "--CHECK_CMD_END--";
 
     private static final int kSystemRootStateUnknow = -1;
@@ -68,7 +68,7 @@ public class ShellUtils {
     private static int systemRootState = kSystemRootStateUnknow;
 
     /**
-     * 手机是否ROOT
+     * check MobilePhone whether has root permission
      *
      * @return
      */
@@ -101,111 +101,12 @@ public class ShellUtils {
         return false;
     }
 
-    /**
-     * 判断全局的process时候还在
-     *
-     * @return
-     */
-    private static boolean isSuProcessRunning() {
-        if (localProcess == null) {
-            return false;
-        }
-        boolean isRunning = false;
-        try {
-            localProcess.exitValue();
-        } catch (Exception e) {
-            isRunning = true;
-        }
-        if (!isRunning) {
-            return false;
-        }
-
-        boolean isPermitted = false;
-        try {
-            // 检测是否还有授权 -- Start
-            dos.writeBytes("echo " + CHECK_CMD_END_TEXT + "\n");
-            dos.flush();
-            String line = null;
-            boolean isFinish = false;
-
-            long waitTimeout = System.currentTimeMillis() + 5 * 1000;
-            while (System.currentTimeMillis() < waitTimeout) {
-                while (in.available() > 0
-                        && (line = in.readLine()) != null) {
-                    if (isPermissionDenied(line)) { // 授权失败
-                        isPermitted = false;
-                        isFinish = true;
-                    } else if (line.contains(CHECK_CMD_END_TEXT)) { // 授权成功
-                        isPermitted = true;
-                        isFinish = true;
-                    }
-                    if (isFinish) {
-                        break;
-                    }
-                }
-                if (isFinish) {
-                    break;
-                }
-            }
-
-            if (!isPermitted) {
-                releaseSuProcess();
-            }
-            // 检测是否还有授权 -- End
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return isPermitted;
-    }
-
-
-    /**
-     * 释放全局的process
-     */
-    public static synchronized void releaseSuProcess() {
-        if (dos != null) {
-            try {
-                dos.writeBytes("exit\n");
-                dos.flush();
-                dos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            dos = null;
-        }
-        if (in != null) {
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            in = null;
-        }
-        if (localProcess != null) {
-            try {
-                localProcess.destroy();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            localProcess = null;
-        }
-    }
-
-
-    private static boolean isPermissionDenied(String output) {
-        String str = output.toLowerCase();
-        return str.contains("permission denied") || str.contains("operation not permitted")
-                || str.contains("connect ui: timer expired") || str.contains("can't set uid 0")
-                || str.contains("can't set gid 0") || str.contains("no such tool");
-    }
-
     public ShellUtils() {
-        //throw new AssertionError();
+
     }
 
     /**
-     * check whether has root permission
+     * check whether gave root permission
      *
      * @return
      */
@@ -459,6 +360,104 @@ public class ShellUtils {
         return isOk;
     }
 
+    /**
+     * 判断全局的process时候还在
+     *
+     * @return
+     */
+    private static boolean isSuProcessRunning() {
+        if (localProcess == null) {
+            return false;
+        }
+        boolean isRunning = false;
+        try {
+            localProcess.exitValue();
+        } catch (Exception e) {
+            isRunning = true;
+        }
+        if (!isRunning) {
+            return false;
+        }
+
+        boolean isPermitted = false;
+        try {
+            // 检测是否还有授权 -- Start
+            dos.writeBytes("echo " + CHECK_CMD_END_TEXT + "\n");
+            dos.flush();
+            String line;
+            boolean isFinish = false;
+            long waitTimeout = System.currentTimeMillis() + 5 * 1000;
+            while (System.currentTimeMillis() < waitTimeout) {
+                while (in.available() > 0
+                        && (line = in.readLine()) != null) {
+                    if (isPermissionDenied(line)) { // 授权失败
+                        isPermitted = false;
+                        isFinish = true;
+                    } else if (line.contains(CHECK_CMD_END_TEXT)) { // 授权成功
+                        isPermitted = true;
+                        isFinish = true;
+                    }
+                    if (isFinish) {
+                        break;
+                    }
+                }
+                if (isFinish) {
+                    break;
+                }
+            }
+
+            if (!isPermitted) {
+                releaseSuProcess();
+            }
+            // 检测是否还有授权 -- End
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return isPermitted;
+    }
+
+
+    /**
+     * 释放全局的process
+     */
+    public static synchronized void releaseSuProcess() {
+        if (dos != null) {
+            try {
+                dos.writeBytes("exit\n");
+                dos.flush();
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            dos = null;
+        }
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            in = null;
+        }
+        if (localProcess != null) {
+            try {
+                localProcess.destroy();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            localProcess = null;
+        }
+    }
+
+
+    private static boolean isPermissionDenied(String output) {
+        String str = output.toLowerCase();
+        return str.contains("permission denied") || str.contains("operation not permitted")
+                || str.contains("connect ui: timer expired") || str.contains("can't set uid 0")
+                || str.contains("can't set gid 0") || str.contains("no such tool");
+    }
+
 
     public static String getSDcardPath(String str) {
         if (Build.VERSION.SDK_INT >= 18) {
@@ -486,9 +485,10 @@ public class ShellUtils {
     }
 
     /**
+     * @param srcfont_path
      * @return
      */
-    public static boolean CopyApkSystem(String srcfont_path) {
+    public static boolean CopyApkToSystem(String srcfont_path) {
         if (!remount()) {
             return false;
         }
@@ -533,11 +533,6 @@ public class ShellUtils {
         }
         return true;
     }
-
-    public static boolean copyFileToSystem() {
-        return false;
-    }
-
 
     private static boolean rename(String srcFile, String oldname, String newname) {
         if (checkFile(srcFile, oldname)) {
@@ -678,7 +673,7 @@ public class ShellUtils {
         }
     }
 
-    public static void copyFile2SystemLib(String dirfile) {
+    public static void copyLibSo2SystemLib(String dirfile) {
         try {
             if (dirfile == null) {
                 return;
@@ -734,6 +729,9 @@ public class ShellUtils {
         return executeCmd(cmdStr);
     }
 
+    /**
+     * @param file
+     */
     public void deleteDir(File file) {
         try {
             if (file == null) {
