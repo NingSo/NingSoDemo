@@ -412,7 +412,7 @@ public class PackageUtils {
         Log.e(TAG, new StringBuilder()
                 .append("installSilent successMsg: ")
                 .append(commandResult.successMsg)
-                .append(", ErrorMsg: ")
+                .append("\n, ErrorMsg: ")
                 .append(commandResult.errorMsg).toString());
         if (commandResult.errorMsg == null) {
             return INSTALL_FAILED_OTHER;

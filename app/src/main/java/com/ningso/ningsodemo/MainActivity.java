@@ -15,13 +15,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.ningso.ningsodemo.utils.FileUitls;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import dalvik.system.DexClassLoader;
 import okhttp3.Call;
@@ -32,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int HAS_ROOT_FAIL = 0x0002;
     private static final int HAS_INSTALL_SUCCESS = 0x0003;
     private static final int HAS_INSTALL_FAIL = 0x0004;
+    private DexClassLoader classLoader;
 
 
     public Handler handler = new Handler() {
@@ -71,8 +70,6 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
-        //new BusyBoxThread(getApplication()).start();
     }
 
     @Override
@@ -83,33 +80,44 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id) {
             case R.id.action_demo1:
-                // new RootThread().start();
-                FileUitls.CopyAssertJarToFile(this, "silence.jar", "silence.jar");
+                Boolean hasRoot = (Boolean) executeClass("com.ningso.silence.ShellUtils", "isRootSystem", false);
+                Toast.makeText(MainActivity.this, "CopyApkSystem:" + hasRoot, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo2:
-                //  downloadaAndInstallApk();
-                loadDex();
+                Boolean results = (Boolean) executeClass("com.ningso.silence.ShellUtils", "CopyApkSystem", true,
+                        Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
+                Toast.makeText(MainActivity.this, "CopyApkSystem:" + results, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo3:
+                int installLoacation = (int) executeClass("com.ningso.silence.PackageUtils", "getInstallLocation", true);
                 //  ShellUtils.copyFile2SystemLib("/data/data/com.mycheering.apps/lib");
-                // Toast.makeText(MainActivity.this, "getInstallLoacation:" + PackageUtils.getInstallLocation(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "getInstallLoacation:" + installLoacation, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo4:
+                int uninstallSilent = (int) executeClass("com.ningso.silence.PackageUtils", "uninstallSilent", true,
+                        getApplicationContext(), "com.ningso.redenvelope", false);
+                Toast.makeText(MainActivity.this, "uninstallSilent:" + uninstallSilent, Toast.LENGTH_SHORT).show();
                 // Toast.makeText(MainActivity.this, "UnSilentInstall:" + PackageUtils.uninstallSilent(getApplicationContext(), "com.ningso.redenvelope", false), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo5:
+                executeClass("com.ningso.silence.PackageUtils", "startInstalledAppDetails", true,
+                        getApplicationContext(), "com.ningso.redenvelope");
                 //  PackageUtils.startInstalledAppDetails(getApplicationContext(), "com.ningso.redenvelope");
                 break;
             case R.id.action_demo6:
                 new InStallSilent().start();
                 break;
             case R.id.action_demo7:
+                Boolean results7 = (Boolean) executeClass("com.ningso.silence.ShellUtils", "CopyApkSystem", true,
+                        Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
+                if (results7) {
+                    new InStallSilent().start();
+                } else {
+                    Toast.makeText(MainActivity.this, "Copy: faile", Toast.LENGTH_SHORT).show();
+                }
 //                if (ShellUtils.CopyApkSystem(Environment.getExternalStorageDirectory() + File.separator + "app-release.apk")) {
 //                    new InStallSilent().start();
 //                } else {
@@ -117,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 break;
             case R.id.action_demo8:
-//                Toast.makeText(MainActivity.this, "Root: " + ShellUtils.isRootSystem(), Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
@@ -131,27 +138,54 @@ public class MainActivity extends AppCompatActivity {
     // 第二个参数：是dex解压缩后存放的目录
     // 第三个参数：是C/C++依赖的本地库文件目录,可以为null
     // 第四个参数：是上一级的类加载器
-    private void loadDex() {
-        File optimizedDexOutputPath = new File(Environment.getExternalStorageDirectory().toString()
-                + File.separator + "classes.dex");
-        File dexOutputDir = getDir("dex", Context.MODE_PRIVATE);
-        DexClassLoader classLoader = new DexClassLoader(optimizedDexOutputPath.getAbsolutePath(),
-                dexOutputDir.getAbsolutePath(), null, getClassLoader());
+    private DexClassLoader getDexClassLoader() {
+        if (classLoader == null) {
+            File optimizedDexOutputPath = new File(Environment.getExternalStorageDirectory().toString()
+                    + File.separator + "classes.dex");
+            File dexOutputDir = getDir("dex", Context.MODE_PRIVATE);
+            classLoader = new DexClassLoader(optimizedDexOutputPath.getAbsolutePath(),
+                    dexOutputDir.getAbsolutePath(), null, getClassLoader());
+        }
+        return classLoader;
+    }
+
+    /**
+     * 加载DexloadClass里面的方法
+     *
+     * @param classStr   类名
+     * @param methodStr  方法名
+     * @param staticMeth 是否是静态方法
+     * @param args       参数数组
+     * @return
+     */
+    private Object executeClass(String classStr, String methodStr, boolean staticMeth, Object... args) {
         Class iclass;
+        Object instance;
+        Object result = null;
         try {
-            iclass = classLoader.loadClass("com.ningso.silence.ShellUtils");
-            Method addmethod = iclass.getMethod("CopyApkSystem", String.class);
-            Boolean install = (Boolean) addmethod.invoke(iclass, Environment.getExternalStorageDirectory() + File.separator + "app-release.apk");
-            Log.e("ee", "eee: " + install);
-            Method[] methods = iclass.getMethods();
-
-            Object instance = iclass.newInstance();
-            Method method = iclass.getMethod("isRootSystem", new Class[]{});
-            Boolean isRoot = (Boolean) method.invoke(instance);
-            Toast.makeText(MainActivity.this, "Root: " + isRoot, Toast.LENGTH_SHORT).show();
-
-            iclass.getMethod("deleteDir", File.class).invoke(instance, getDir("dex", Context.MODE_PRIVATE));
-
+            iclass = getDexClassLoader().loadClass(classStr);
+            instance = iclass.newInstance();
+            if (args.length != 0) {
+                Class[] params = new Class[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    if (args[i] instanceof Context) {
+                        params[i] = Context.class;
+                    } else {
+                        params[i] = args[i].getClass();
+                    }
+                }
+                if (staticMeth) {
+                    result = iclass.getMethod(methodStr, params).invoke(iclass, args);
+                } else {
+                    result = iclass.getMethod(methodStr, params).invoke(instance, args);
+                }
+            } else {
+                if (staticMeth) {
+                    result = iclass.getMethod(methodStr, new Class[]{}).invoke(iclass);
+                } else {
+                    result = iclass.getMethod(methodStr, new Class[]{}).invoke(instance);
+                }
+            }
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -163,11 +197,9 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        } finally {
+            return result;
         }
-    }
-
-    private void removeAppDexFile() {
-        File dexOutputDir = getDir("classes", Context.MODE_PRIVATE);
     }
 
     class RootThread extends Thread {
@@ -188,16 +220,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             super.run();
-//            Message message = new Message();
-//            int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
-//            //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
-//            if (installsuccuess == 1) {
-//                message.what = HAS_INSTALL_SUCCESS;
-//            } else {
-//                message.what = HAS_INSTALL_FAIL;
-//            }
-//            //   Log.e("DEBUG", "installsuccuess:" + installsuccuess);
-//            handler.sendMessage(message);
+            Message message = new Message();
+            int installsuccuess = 0;
+            String installpath = (String) executeClass("com.ningso.silence.ShellUtils", "getInstallSilentDir", true);
+            if (installpath != null) {
+                installsuccuess = (int) executeClass("com.ningso.silence.PackageUtils", "installSilent", true, getApplicationContext(), installpath + "app-release.apk");
+            }
+            // int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
+            //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
+            if (installsuccuess == 1) {
+                message.what = HAS_INSTALL_SUCCESS;
+            } else {
+                message.what = HAS_INSTALL_FAIL;
+            }
+            handler.sendMessage(message);
         }
     }
 
