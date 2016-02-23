@@ -99,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_demo4:
                 int uninstallSilent = (int) executeClass("com.ningso.silence.PackageUtils", "uninstallSilent", true,
                         getApplicationContext(), "com.ningso.redenvelope", false);
+
                 Toast.makeText(MainActivity.this, "uninstallSilent:" + uninstallSilent, Toast.LENGTH_SHORT).show();
-                // Toast.makeText(MainActivity.this, "UnSilentInstall:" + PackageUtils.uninstallSilent(getApplicationContext(), "com.ningso.redenvelope", false), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo5:
                 executeClass("com.ningso.silence.PackageUtils", "startInstalledAppDetails", true,
@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 break;
             case R.id.action_demo8:
+                executeClass("com.ningso.silence.ShellUtils", "deleteDir", false, getDir("dex", Context.MODE_PRIVATE));
                 break;
             default:
                 break;
@@ -170,6 +171,12 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < args.length; i++) {
                     if (args[i] instanceof Context) {
                         params[i] = Context.class;
+                    } else if (args[i] instanceof Boolean) {
+                        params[i] = Boolean.TYPE;
+                    } else if (args[i] instanceof Integer) {
+                        params[i] = Integer.TYPE;
+                    } else if (args[i] instanceof Character) {
+                        params[i] = Character.TYPE;
                     } else {
                         params[i] = args[i].getClass();
                     }
