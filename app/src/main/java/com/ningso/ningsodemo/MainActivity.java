@@ -21,6 +21,7 @@ import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
+import java.util.HashMap;
 
 import okhttp3.Call;
 
@@ -71,21 +72,26 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 //packageKey=sByXii1W&categoryKey=KeT3axbI&ResourcesTypeKey=NHwpZYrz&adType=image
-                //发送下载成功日志
-                String[] keys = new String[]{
-                        "packageKey",
-                        "categoryKey",
-                        "ResourcesTypeKey",
-                        "adType"
-                };
-                String[] values = new String[]{
-                        "sByXii1W",
-                        "KeT3axbI",
-                        "NHwpZYrz",
-                        "image"
-                };
+//                发送下载成功日志
+//                String[] keys = new String[]{
+//                        "packageKey",
+//                        "categoryKey",
+//                        "ResourcesTypeKey",
+//                        "adType"
+//                };
+//                String[] values = new String[]{
+//                        "sByXii1W",
+//                        "KeT3axbI",
+//                        "NHwpZYrz",
+//                        "image"
+//                };
+                HashMap<String, String> paramMap = new HashMap<String, String>();
+                paramMap.put("packageKey", "sByXii1W");
+                paramMap.put("categoryKey", "KeT3axbI");
+                paramMap.put("ResourcesTypeKey", "NHwpZYrz");
+                paramMap.put("adType", "image");
                 try {
-                    Log.e("###", "str: " + HttpUtils.postData("ad/getAdOne",keys, values));
+                    Log.e("###", "str: " + HttpUtils.AsycPostData("ad/getAdOne", paramMap));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -200,7 +206,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadaAndInstallApk() {
         OkHttpUtils.get()
-                .headers()
                 .url("http://upaicdn.xinmei365.com/newwfs/support/ShuameMobile.apk")//
                 .build()//
                 .execute(new FileCallBack(Environment.getExternalStorageDirectory().getAbsolutePath(), "Download/app-release.apk") {

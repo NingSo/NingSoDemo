@@ -16,3 +16,6 @@ app/build/
 /captures
 *.iml
 app/app.iml
+*.d
+*.o
+silence/src/main/obj
