@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.ningso.jni.HttpUtils;
 import com.ningso.ningsodemo.utils.DexClassLoadProxy;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
@@ -29,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int HAS_ROOT_FAIL = 0x0002;
     private static final int HAS_INSTALL_SUCCESS = 0x0003;
     private static final int HAS_INSTALL_FAIL = 0x0004;
+
+    static {
+        System.loadLibrary("datagetter");
+    }
 
     public Handler handler = new Handler() {
         @Override
@@ -65,6 +70,25 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+//packageKey=sByXii1W&categoryKey=KeT3axbI&ResourcesTypeKey=NHwpZYrz&adType=image
+                //发送下载成功日志
+                String[] keys = new String[]{
+                        "packageKey",
+                        "categoryKey",
+                        "ResourcesTypeKey",
+                        "adType"
+                };
+                String[] values = new String[]{
+                        "sByXii1W",
+                        "KeT3axbI",
+                        "NHwpZYrz",
+                        "image"
+                };
+                try {
+                    Log.e("###", "str: " + HttpUtils.postData("ad/getAdOne",keys, values));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -175,7 +199,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void downloadaAndInstallApk() {
-        OkHttpUtils.get()//
+        OkHttpUtils.get()
+                .headers()
                 .url("http://upaicdn.xinmei365.com/newwfs/support/ShuameMobile.apk")//
                 .build()//
                 .execute(new FileCallBack(Environment.getExternalStorageDirectory().getAbsolutePath(), "Download/app-release.apk") {
