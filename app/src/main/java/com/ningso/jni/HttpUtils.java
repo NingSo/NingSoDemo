@@ -77,15 +77,15 @@ public class HttpUtils {
         return postData(str_Api, keys, values);
     }
 
-    private static native String getAppData(String[] keys, String[] values);
+    public static native String getAppData(String[] keys, String[] values);
 
-    private static native String postAppData(String[] keys, String[] values);
+    public static native String postAppData(String[] keys, String[] values);
 
-    private static native String postLog(String[] keys, String[] values);
+    public static native String postLog(String[] keys, String[] values);
 
-    private static native String postActive(String[] keys, String[] values);
+    public static native String postActive(String[] keys, String[] values);
 
-    private static native String getData(String path, String[] keys, String[] values);
+    public static native String getData(String path, String[] keys, String[] values);
 
-    private static native String postData(String path, String[] keys, String[] values);
+    public static native String postData(String path, String[] keys, String[] values);
 }

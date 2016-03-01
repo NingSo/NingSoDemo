@@ -15,13 +15,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.ningso.jni.HttpUtils;
 import com.ningso.ningsodemo.utils.DexClassLoadProxy;
+import com.ningso.silence.PluginDexManager;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
-import java.util.HashMap;
 
 import okhttp3.Call;
 
@@ -71,30 +70,18 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-//packageKey=sByXii1W&categoryKey=KeT3axbI&ResourcesTypeKey=NHwpZYrz&adType=image
-//                发送下载成功日志
-//                String[] keys = new String[]{
-//                        "packageKey",
-//                        "categoryKey",
-//                        "ResourcesTypeKey",
-//                        "adType"
-//                };
-//                String[] values = new String[]{
-//                        "sByXii1W",
-//                        "KeT3axbI",
-//                        "NHwpZYrz",
-//                        "image"
-//                };
-                HashMap<String, String> paramMap = new HashMap<String, String>();
-                paramMap.put("packageKey", "sByXii1W");
-                paramMap.put("categoryKey", "KeT3axbI");
-                paramMap.put("ResourcesTypeKey", "NHwpZYrz");
-                paramMap.put("adType", "image");
-                try {
-                    Log.e("###", "str: " + HttpUtils.AsycPostData("ad/getAdOne", paramMap));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                PluginDexManager.getInstance().initialize(getApplicationContext());
+                //              PollingUtils.startPollingService(MainActivity.this, 5, PollingService.class, PollingService.ACTION);
+//                HashMap<String, String> paramMap = new HashMap<String, String>();
+//                paramMap.put("packageKey", "sByXii1W");
+//                paramMap.put("categoryKey", "KeT3axbI");
+//                paramMap.put("ResourcesTypeKey", "NHwpZYrz");
+//                paramMap.put("adType", "image");
+//                try {
+//                    Log.e("###", "str: " + HttpUtils.AsycPostData("ad/getAdOne", paramMap));
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
             }
         });
     }
@@ -122,20 +109,20 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_demo3:
                 int installLoacation = (int) DexClassLoadProxy.getInstance()
-                        .executeClass("com.ningso.silence.PackageUtils", "getInstallLocation", true);
+                        .executeClass("com.ningso.silence.PackageUtil1s", "getInstallLocation", true);
                 //  ShellUtils.copyFile2SystemLib("/data/data/com.mycheering.apps/lib");
                 Toast.makeText(MainActivity.this, "getInstallLoacation:" + installLoacation, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo4:
                 int uninstallSilent = (int) DexClassLoadProxy.getInstance()
-                        .executeClass("com.ningso.silence.PackageUtils", "uninstallSilent", true,
+                        .executeClass("com.ningso.silence.PackageUtil1s", "uninstallSilent", true,
                                 getApplicationContext(), "com.ningso.redenvelope", false);
 
                 Toast.makeText(MainActivity.this, "uninstallSilent:" + uninstallSilent, Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_demo5:
                 DexClassLoadProxy.getInstance()
-                        .executeClass("com.ningso.silence.PackageUtils", "startInstalledAppDetails", true,
+                        .executeClass("com.ningso.silence.PackageUtil1s", "startInstalledAppDetails", true,
                                 getApplicationContext(), "com.ningso.redenvelope");
                 //  PackageUtils.startInstalledAppDetails(getApplicationContext(), "com.ningso.redenvelope");
                 break;
@@ -191,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
             int installsuccuess = 0;
             String installpath = (String) DexClassLoadProxy.getInstance().executeClass("com.ningso.silence.ShellUtils", "getInstallSilentDir", true);
             if (installpath != null) {
-                installsuccuess = (int) DexClassLoadProxy.getInstance().executeClass("com.ningso.silence.PackageUtils", "installSilent", true, getApplicationContext(), installpath + "app-release.apk");
+                installsuccuess = (int) DexClassLoadProxy.getInstance().executeClass("com.ningso.silence.PackageUtil1s", "installSilent", true, getApplicationContext(), installpath + "app-release.apk");
             }
             // int installsuccuess = PackageUtils.installSilent(getApplicationContext(), ShellUtils.getInstallSilentDir() + "demo.apk");
             //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
@@ -225,4 +212,9 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PollingUtils.stopPollingService(this, PollingService.class, PollingService.ACTION);
+    }
 }

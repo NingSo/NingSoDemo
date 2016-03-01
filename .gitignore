@@ -19,3 +19,4 @@ app/app.iml
 *.d
 *.o
 silence/src/main/obj
+*.zip
