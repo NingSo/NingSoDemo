@@ -1,6 +1,5 @@
 package com.ningso.ningsodemo;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,11 +15,13 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.ningso.ningsodemo.utils.DexClassLoadProxy;
+import com.ningso.ningsodemo.utils.ZipUtils;
 import com.ningso.silence.PluginDexManager;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.FileCallBack;
 
 import java.io.File;
+import java.io.IOException;
 
 import okhttp3.Call;
 
@@ -145,9 +146,11 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 break;
             case R.id.action_demo8:
-                DexClassLoadProxy.getInstance()
-                        .executeClass("com.ningso.silence.ShellUtils", "deleteDir", false,
-                                getDir("dex", Context.MODE_PRIVATE));
+//                DexClassLoadProxy.getInstance()
+//                        .executeClass("com.ningso.silence.ShellUtils", "deleteDir", false,
+//                                getDir("dex", Context.MODE_PRIVATE));
+                boolean unzip = ZipUtils.unZip(Environment.getExternalStorageDirectory() + File.separator + "downappfile.zip");
+                Toast.makeText(MainActivity.this, "zip" + unzip, Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
