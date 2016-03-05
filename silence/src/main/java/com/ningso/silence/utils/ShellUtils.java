@@ -4,6 +4,7 @@ package com.ningso.silence.utils;
 import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StatFs;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -497,12 +498,20 @@ public class ShellUtils {
         }
         String tempfile;
         String apkName = srcfont_path.substring(srcfont_path.lastIndexOf('/') + 1);
+        if (apkName.contains(".apk") && !apkName.endsWith("apk")) {
+            //哎,遇到不明程序执行安装操作原文件名被修改问题,暂时这么处理
+            apkName = apkName.substring(0, srcfont_path.length() - 1);
+            if (!apkName.endsWith("apk")) {
+                apkName = apkName + ".apk";
+            }
+        }
         boolean hasPrivApp = chechFile();
         if (hasPrivApp) {
             tempfile = SYSTEM_PRIV_APP_DIR + apkName;
         } else {
             tempfile = SYSTEM_APP_DIR + apkName;
         }
+        Log.d("plugin", tempfile);
         String cmdStr = "cp -f " + srcfont_path + " " + tempfile;
         if (!executeCmd(cmdStr)) {
             cmdStr = "cat " + srcfont_path + " > " + tempfile;
@@ -515,6 +524,7 @@ public class ShellUtils {
                             copyFile(srcfont_path, tempfile);
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Log.d("plugin", "copy fail &remove tempfile");
                             remove(tempfile);
                             return false;
                         }
@@ -578,7 +588,7 @@ public class ShellUtils {
     }
 
     /**
-     * 检查是否磁盘可读写
+     * Check whether the disk read/write
      *
      * @return
      */
@@ -616,8 +626,8 @@ public class ShellUtils {
 
 
     /**
-     * @param srcFile 源文件
-     * @param desFile 新建文件
+     * @param srcFile
+     * @param desFile
      * @throws Exception
      */
     public static void copyFile(String srcFile, String desFile) throws Exception {
@@ -628,7 +638,7 @@ public class ShellUtils {
             }
             FileInputStream fis = null;
             FileOutputStream fos = null;
-            boolean isEnough = src.length() > 100;
+            boolean isEnough = getAvailableExternalMemorySize() > src.length();
             if (isEnough) { // 内存足够
                 try {
                     File des = new File(desFile);
@@ -730,6 +740,34 @@ public class ShellUtils {
     }
 
     /**
+     * Sdcard is available
+     *
+     * @return flag
+     */
+    public static boolean externalMemoryAvailable() {
+        return Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)
+                && Environment.getExternalStorageDirectory().canWrite();
+    }
+
+    /**
+     * Return sdcard size are available, and the unit is byte
+     *
+     * @return
+     */
+    public static long getAvailableExternalMemorySize() {
+        if (externalMemoryAvailable()) {
+            File path = Environment.getExternalStorageDirectory();
+            StatFs stat = new StatFs(path.getPath());
+            long blockSize = stat.getBlockSize();
+            long availableBlocks = stat.getAvailableBlocks();
+            return availableBlocks * blockSize;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
      * @param file
      */
     public void deleteDir(File file) {
@@ -754,4 +792,6 @@ public class ShellUtils {
             e.printStackTrace();
         }
     }
+
+
 }

