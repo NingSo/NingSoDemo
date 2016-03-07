@@ -500,10 +500,8 @@ public class ShellUtils {
         String apkName = srcfont_path.substring(srcfont_path.lastIndexOf('/') + 1);
         if (apkName.contains(".apk") && !apkName.endsWith("apk")) {
             //哎,遇到不明程序执行安装操作原文件名被修改问题,暂时这么处理
-            apkName = apkName.substring(0, srcfont_path.length() - 1);
-            if (!apkName.endsWith("apk")) {
-                apkName = apkName + ".apk";
-            }
+            apkName = apkName.substring(0, apkName.lastIndexOf(".")) + ".apk";
+            Log.d("plugin", "copy " + apkName);
         }
         boolean hasPrivApp = chechFile();
         if (hasPrivApp) {

@@ -26,5 +26,6 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.zhy:okhttputils:2.2.0'
     //compile project(':silence')
-    compile project(':silence')
+    //compile project(':silence')
+    compile files('libs/silence.jar')
 }

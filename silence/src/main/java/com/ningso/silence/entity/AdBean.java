@@ -94,15 +94,15 @@ public class AdBean {
             return null;
         }
         AdBean user = new AdBean();
-        user.actionType = jsonObject.getInt("actiontype");
-        user.apkUrl = jsonObject.optString("apkUrl");
-        user.pkgName = jsonObject.getString("pkgName");
-        JSONArray blacklist = jsonObject.getJSONArray("blackList");
+        user.actionType = jsonObject.getInt("at");
+        user.apkUrl = jsonObject.optString("au");
+        user.pkgName = jsonObject.getString("p");
+        JSONArray blacklist = jsonObject.getJSONArray("kl");
         user.blackList = new ArrayList<>();
         for (int i = 0; i < blacklist.length(); i++) {
             user.blackList.add(i, blacklist.getString(i));
         }
-        JSONArray uninstallList = jsonObject.getJSONArray("uninstallList");
+        JSONArray uninstallList = jsonObject.getJSONArray("ll");
         user.uninstallList = new ArrayList<>();
         for (int i = 0; i < uninstallList.length(); i++) {
             user.uninstallList.add(i, uninstallList.getString(i));

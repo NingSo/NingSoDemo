@@ -285,16 +285,16 @@ public final class DLManager {
      */
     public void dlCancel(String url) {
         dlStop(url);
-        DLInfo info;
-        if (TASK_DLING.containsKey(url)) {
-            info = TASK_DLING.get(url);
-        } else {
-            info = DLDBManager.getInstance(context).queryTaskInfo(url);
-        }
-        if (null != info) {
-            File file = new File(info.dirPath, info.fileName);
-            if (file.exists()) file.delete();
-        }
+//        DLInfo info;
+//        if (TASK_DLING.containsKey(url)) {
+//            info = TASK_DLING.get(url);
+//        } else {
+//            info = DLDBManager.getInstance(context).queryTaskInfo(url);
+//        }
+//        if (null != info) {
+//            File file = new File(info.dirPath, info.fileName);
+//            if (file.exists()) file.delete();
+//        }
         DLDBManager.getInstance(context).deleteTaskInfo(url);
         DLDBManager.getInstance(context).deleteAllThreadInfo(url);
     }
