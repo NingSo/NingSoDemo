@@ -10,8 +10,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
-
 
 import java.io.File;
 
@@ -764,6 +764,48 @@ public class PackageUtils {
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
+    }
+
+    /**
+     * start app
+     *
+     * @param ctx
+     * @param packageName  com.android.system.book
+     * @param activityName com.android.core.MainActivity2
+     * @return <li>{@link #DELETE_SUCCEEDED} means open success</li>
+     * <li>{@link #DELETE_FAILED_INTERNAL_ERROR} means internal error</li>
+     * <li>{@link #DELETE_FAILED_INVALID_PACKAGE} means package name error</li>
+     * <li>{@link #DELETE_FAILED_PERMISSION_DENIED} means permission denied</li>
+     */
+    public static int startInstallAppLauncher(Context ctx, String packageName, String activityName) {
+        if (ShellUtils.isRootSystem()) {
+            String cmd = "am start -n " + packageName + "/" + activityName;
+            ShellUtils.CommandResult commandResult = ShellUtils.execCommand(cmd);
+            if (commandResult.successMsg != null
+                    && (commandResult.successMsg.contains("Success") || commandResult.successMsg.contains("success"))) {
+                return DELETE_SUCCEEDED;
+            }
+            Log.e(TAG, new StringBuilder().append("uninstallSilent successMsg:").append(commandResult.successMsg)
+                    .append(", ErrorMsg:").append(commandResult.errorMsg).toString());
+            if (commandResult.errorMsg == null) {
+                return DELETE_FAILED_INTERNAL_ERROR;
+            }
+            if (commandResult.errorMsg.contains("Permission denied")) {
+                return DELETE_FAILED_PERMISSION_DENIED;
+            }
+            return DELETE_FAILED_INTERNAL_ERROR;
+        } else {
+            if (ctx == null || TextUtils.isEmpty(packageName)) {
+                return DELETE_FAILED_INTERNAL_ERROR;
+            }
+            try {
+                Intent intent = ctx.getPackageManager().getLaunchIntentForPackage(packageName);
+                ctx.startActivity(intent);
+                return DELETE_SUCCEEDED;
+            } catch (Exception e) {
+                return DELETE_FAILED_INTERNAL_ERROR;
+            }
+        }
     }
 
     /**

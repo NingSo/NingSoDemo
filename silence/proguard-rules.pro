@@ -37,7 +37,6 @@
 -keepattributes Signature
 
 -keep interface com.ningso.silence.downloader.interfaces.** { *; }
--keep interface com.ningso.silence.downloader.interfaces.** { *; }
 
 -keep public class com.ningso.silence.downloader.interfaces.** {
     <fields>;

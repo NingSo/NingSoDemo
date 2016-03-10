@@ -119,6 +119,17 @@ public class ShellUtils {
      * execute shell command, default return result msg
      *
      * @param command command
+     * @return
+     * @see ShellUtils#execCommand(String[], boolean, boolean)
+     */
+    public static CommandResult execCommand(String command) {
+        return execCommand(new String[]{command}, true, true);
+    }
+
+    /**
+     * execute shell command, default return result msg
+     *
+     * @param command command
      * @param isRoot  whether need to run with root
      * @return
      * @see ShellUtils#execCommand(String[], boolean, boolean)
@@ -252,8 +263,9 @@ public class ShellUtils {
                 process.destroy();
             }
         }
-        return new CommandResult(result, successMsg == null ? null : successMsg.toString(), errorMsg == null ? null
-                : errorMsg.toString());
+        return new CommandResult(result,
+                successMsg == null ? null : successMsg.toString(),
+                errorMsg == null ? null : errorMsg.toString());
     }
 
     /**
@@ -346,7 +358,6 @@ public class ShellUtils {
     private static boolean initSuProcess(long timeout) {
         boolean isOk = true;
         String cmd = "su";
-
         try {
             releaseSuProcess();
             ProcessBuilder builder = new ProcessBuilder(cmd);
@@ -459,7 +470,6 @@ public class ShellUtils {
                 || str.contains("can't set gid 0") || str.contains("no such tool");
     }
 
-
     public static String getSDcardPath(String str) {
         if (Build.VERSION.SDK_INT >= 18) {
             return str.replaceAll(Environment.getExternalStorageDirectory()
@@ -467,22 +477,6 @@ public class ShellUtils {
         } else {
             return str;
         }
-    }
-
-    public static void saveIncludedFileIntoFilesFolder(int resourceid, String filename,
-                                                       Context ApplicationContext) throws Exception {
-        InputStream is = ApplicationContext.getResources().openRawResource(resourceid);
-        @SuppressWarnings("deprecation")
-        FileOutputStream fos = ApplicationContext.openFileOutput(filename, Context.MODE_WORLD_READABLE);
-        byte[] bytebuf = new byte[1024];
-        int read;
-        while ((read = is.read(bytebuf)) >= 0) {
-            fos.write(bytebuf, 0, read);
-        }
-        is.close();
-        fos.getChannel().force(true);
-        fos.flush();
-        fos.close();
     }
 
     /**

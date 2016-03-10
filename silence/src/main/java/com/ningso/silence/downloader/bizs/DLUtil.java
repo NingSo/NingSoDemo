@@ -98,6 +98,7 @@ final class DLUtil {
         if (null != contentDisposition) {
             fileName = parseContentDisposition(contentDisposition);
             if (null != fileName) {
+                fileName = fileName.replace("\"", "");
                 int index = fileName.lastIndexOf('/') + 1;
                 if (index > 0) {
                     fileName = fileName.substring(index);
@@ -152,7 +153,7 @@ final class DLUtil {
         final char BACKSLASH = 0x5C;
         final char BAR = 0x7C;
         final char DEL = 0x7F;
-        final char UNDERSCORE = 0x5F;
+        final char UNDERSCORE = 0x5F;//_
 
         StringBuilder sb = new StringBuilder();
         char ch;
