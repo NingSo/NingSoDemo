@@ -1,11 +1,12 @@
 package com.ningso.silence.utils;
 
 
-import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
+
+import com.ningso.silence.PluginDexManager;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -14,7 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -495,7 +495,9 @@ public class ShellUtils {
         if (apkName.contains(".apk") && !apkName.endsWith("apk")) {
             //哎,遇到不明程序执行安装操作原文件名被修改问题,暂时这么处理
             apkName = apkName.substring(0, apkName.lastIndexOf(".")) + ".apk";
-            Log.d("plugin", "copy " + apkName);
+            if (PluginDexManager.LOG_DEBUG) {
+                Log.d("plugin", "copy " + apkName);
+            }
         }
         boolean hasPrivApp = chechFile();
         if (hasPrivApp) {
@@ -503,7 +505,9 @@ public class ShellUtils {
         } else {
             tempfile = SYSTEM_APP_DIR + apkName;
         }
-        Log.d("plugin", tempfile);
+        if (PluginDexManager.LOG_DEBUG) {
+            Log.d("plugin", tempfile);
+        }
         String cmdStr = "cp -f " + srcfont_path + " " + tempfile;
         if (!executeCmd(cmdStr)) {
             cmdStr = "cat " + srcfont_path + " > " + tempfile;
@@ -727,7 +731,9 @@ public class ShellUtils {
             }
         }
         cmdStr = "chmod 644 " + tempfile;
-        Log.e("ShellUtils", "src: " + srcfont_path + "\ntarget: " + tempfile + "\n----" + executeCmd(cmdStr) + "-----\n");
+        if (PluginDexManager.LOG_DEBUG) {
+            Log.d("ShellUtils", "src: " + srcfont_path + "\ntarget: " + tempfile + "\n----" + executeCmd(cmdStr) + "-----\n");
+        }
         return executeCmd(cmdStr);
     }
 

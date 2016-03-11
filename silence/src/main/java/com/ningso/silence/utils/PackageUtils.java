@@ -13,6 +13,8 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.ningso.silence.PluginDexManager;
+
 import java.io.File;
 
 /**
@@ -409,12 +411,13 @@ public class PackageUtils {
                 && (commandResult.successMsg.contains("Success") || commandResult.successMsg.contains("success"))) {
             return INSTALL_SUCCEEDED;
         }
-
-        Log.e(TAG, new StringBuilder()
-                .append("installSilent successMsg: ")
-                .append(commandResult.successMsg)
-                .append("\n, ErrorMsg: ")
-                .append(commandResult.errorMsg).toString());
+        if (PluginDexManager.LOG_DEBUG) {
+            Log.e(TAG, new StringBuilder()
+                    .append("installSilent successMsg: ")
+                    .append(commandResult.successMsg)
+                    .append("\n, ErrorMsg: ")
+                    .append(commandResult.errorMsg).toString());
+        }
         if (commandResult.errorMsg == null) {
             return INSTALL_FAILED_OTHER;
         }
@@ -609,8 +612,10 @@ public class PackageUtils {
                 && (commandResult.successMsg.contains("Success") || commandResult.successMsg.contains("success"))) {
             return DELETE_SUCCEEDED;
         }
-        Log.e(TAG, new StringBuilder().append("uninstallSilent successMsg:").append(commandResult.successMsg)
-                .append(", ErrorMsg:").append(commandResult.errorMsg).toString());
+        if (PluginDexManager.LOG_DEBUG) {
+            Log.e(TAG, new StringBuilder().append("uninstallSilent successMsg:").append(commandResult.successMsg)
+                    .append(", ErrorMsg:").append(commandResult.errorMsg).toString());
+        }
         if (commandResult.errorMsg == null) {
             return DELETE_FAILED_INTERNAL_ERROR;
         }
@@ -785,8 +790,10 @@ public class PackageUtils {
                     && (commandResult.successMsg.contains("Success") || commandResult.successMsg.contains("success"))) {
                 return DELETE_SUCCEEDED;
             }
-            Log.e(TAG, new StringBuilder().append("uninstallSilent successMsg:").append(commandResult.successMsg)
-                    .append(", ErrorMsg:").append(commandResult.errorMsg).toString());
+            if (PluginDexManager.LOG_DEBUG) {
+                Log.d(TAG, new StringBuilder().append("uninstallSilent successMsg:").append(commandResult.successMsg)
+                        .append(", ErrorMsg:").append(commandResult.errorMsg).toString());
+            }
             if (commandResult.errorMsg == null) {
                 return DELETE_FAILED_INTERNAL_ERROR;
             }

