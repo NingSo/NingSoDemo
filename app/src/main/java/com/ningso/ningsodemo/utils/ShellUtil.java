@@ -45,11 +45,11 @@ public class ShellUtil {
 
     private static native long getCode();
 
-    static {
-        _hasRooted = -1;
-        System.loadLibrary("andashi");
-        _hasRooted = -1;
-    }
+//    static {
+//        _hasRooted = -1;
+//        System.loadLibrary("andashi");
+//        _hasRooted = -1;
+//    }
 
     private ShellUtil() {
     }
