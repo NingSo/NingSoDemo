@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.zhy:okhttputils:2.2.0'
     //compile files('lib/silence.jar')
+    compile files('lib/fontSdk.jar')
 }

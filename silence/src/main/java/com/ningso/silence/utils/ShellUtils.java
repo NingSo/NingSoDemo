@@ -303,6 +303,15 @@ public class ShellUtils {
             this.successMsg = successMsg;
             this.errorMsg = errorMsg;
         }
+
+        @Override
+        public String toString() {
+            return "CommandResult{" +
+                    "result=" + result +
+                    ", successMsg='" + successMsg + '\'' +
+                    ", errorMsg='" + errorMsg + '\'' +
+                    '}';
+        }
     }
 
     /***
@@ -431,7 +440,7 @@ public class ShellUtils {
 
 
     /**
-     * 释放全局的process
+     *   全局的process
      */
     public static synchronized void releaseSuProcess() {
         if (dos != null) {
@@ -575,7 +584,7 @@ public class ShellUtils {
     }
 
     /**
-     * 获取安装路径
+     *  取安装路径
      *
      * @return
      */
@@ -604,7 +613,7 @@ public class ShellUtils {
     }
 
     /**
-     * 移除文件
+     *    件
      *
      * @param path
      * @return
