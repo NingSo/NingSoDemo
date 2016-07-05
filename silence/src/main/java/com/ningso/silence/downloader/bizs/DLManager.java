@@ -6,7 +6,6 @@ import android.util.Log;
 
 import com.ningso.silence.downloader.interfaces.IDListener;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

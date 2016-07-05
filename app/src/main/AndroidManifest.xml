@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+    <uses-permission android:name="bbk.theme.permission.ACCESS_SYSTEM_FONT"/>
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -37,8 +39,8 @@
         </service>
 
         <provider
-            android:name=".FontProvider"
-            android:authorities="com.ningso.ningsodemo.FontProvider"/>
+            android:name=".TestFontProvider"
+            android:authorities="com.ningso.ningsodemo.TestFontProvider"/>
 
     </application>
 

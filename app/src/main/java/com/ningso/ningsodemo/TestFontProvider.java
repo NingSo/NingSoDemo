@@ -16,7 +16,7 @@ import android.util.Log;
  * @author: NingSo
  * @Email: ningso.ping@gmail.com
  */
-public class FontProvider extends ContentProvider {
+public class TestFontProvider extends ContentProvider {
 
     private final static String LOCAL_DB_NAME = "hifont.db";
     private final static int DB_VERSION = 1;
@@ -46,8 +46,8 @@ public class FontProvider extends ContentProvider {
         Log.w("pdb", "run here");
         //这块搞了我大半天，所有东西都搞定了，就是表建不出来，原来SqliteHelper的OnCreate()方法不会被自动调用，只有使用getReadableDatabase()后才会新建　　　　 表
         // mOpenHelper = new DatabaseHelper(getContext());
-        mOpenHelper.getReadableDatabase();
-        mOpenHelper.getWritableDatabase();
+//        mOpenHelper.getReadableDatabase();
+//        mOpenHelper.getWritableDatabase();
         return true;
     }
 

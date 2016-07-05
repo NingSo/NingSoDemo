@@ -2,10 +2,6 @@ package com.ningso.ningsodemo.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.view.Gravity;
-
-import com.ningso.ningsodemo.R;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -61,24 +57,24 @@ public class WaitingSpinner {
 
     public static void show(Context cx, boolean horizontal, boolean cancelable) {
         if (!sBlock.getAndSet(true)) {
-            sPd = new ProgressDialog(cx, R.style.BlankPBTheme);
-            sPd.getWindow().setGravity(Gravity.CENTER);
-            sPd.setIndeterminateDrawable(cx.getResources().getDrawable(R.drawable.loading));
-            if (horizontal) {
-                sPd.setProgressStyle(1);
-                sPd.setProgressDrawable(cx.getResources().getDrawable(R.drawable.progress_bar_states));
-                sPd.setMax(100);
-            }
-            sPd.setCancelable(cancelable);
-            sPd.show();
-            sCanceled = false;
-            sPd.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    WaitingSpinner.sCanceled = true;
-                    WaitingSpinner.dismiss();
-                }
-            });
+//            sPd = new ProgressDialog(cx, R.style.BlankPBTheme);
+//            sPd.getWindow().setGravity(Gravity.CENTER);
+//            sPd.setIndeterminateDrawable(cx.getResources().getDrawable(R.drawable.loading));
+//            if (horizontal) {
+//                sPd.setProgressStyle(1);
+//                sPd.setProgressDrawable(cx.getResources().getDrawable(R.drawable.progress_bar_states));
+//                sPd.setMax(100);
+//            }
+//            sPd.setCancelable(cancelable);
+//            sPd.show();
+//            sCanceled = false;
+//            sPd.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//                @Override
+//                public void onCancel(DialogInterface dialog) {
+//                    WaitingSpinner.sCanceled = true;
+//                    WaitingSpinner.dismiss();
+//                }
+//            });
         }
     }
 
