@@ -1,28 +1,34 @@
 package com.ningso.ningsodemo;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.graphics.Typeface;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.ningso.ningsodemo.utils.DownLoadHelper;
+import com.ningso.ningsodemo.utils.PermissionHelper;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PermissionHelper.OnApplyPermissionListener {
 
-
-    private static final String FONT_URI = "content://com.android.theme.font.db.info/current";
-    TextView mTextView;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    ImageView mImageView;
+    private PermissionHelper mPermissionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,139 +36,108 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        mTextView = (TextView) findViewById(R.id.tv_Text);
+        mImageView = (ImageView) findViewById(R.id.iv_img);
 
+        mPermissionHelper = new PermissionHelper(this);
+        mPermissionHelper.setOnApplyPermissionListener(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (mPermissionHelper.isAllRequestedPermissionGranted()) {
+                Log.d(TAG, "All of requested permissions has been granted, so run app logic directly.");
+            } else {
+
+                Log.d(TAG, "Some of requested permissions hasn't been granted, so apply permissions first.");
+                mPermissionHelper.applyPermissions();
+            }
+        }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
-                ContentResolver contentResolver = getContentResolver();
-                Uri uri = Uri.parse(FONT_URI);
-                Cursor cursor = contentResolver.query(uri, null, null, null, null);
-                if (cursor != null) {
-                    while (cursor.moveToNext()) {
-                        //这个必须是列名哦哦哦
-                        System.out.println("外部访问***************************************:\n"
-                                + "\n_id: " + cursor.getString(0)
-                                + "\nuid: " + cursor.getString(1)
-                                + "\nstate: " + cursor.getString(2)
-                                + "\nfilename: " + cursor.getString(3)
-                                + "\ntype: " + cursor.getString(4)
-                                + "\nname: " + cursor.getString(5)
-                                + "\ndownloadId: " + cursor.getString(6)
-                                + "\ndownload_time: " + cursor.getString(7)
-                                + "\ndownloaded_times: " + cursor.getString(8)
-                                + "\npraised_times: " + cursor.getString(9)
-                                + "\npraised: " + cursor.getString(10)
-                                + "\nedition: " + cursor.getString(11)
-                                + "\nprice: " + cursor.getString(12)
-                                + "\nopenid: " + cursor.getString(13)
-                                + "\nverify: " + cursor.getString(14)
-                        );
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download";
+                DownLoadHelper.executeDownLoad("http://upaicdn.xinmei365.com/fontAPK/QRhJjdPc.apk", path, "ningso.apk",
+                        new DownLoadHelper.FileCallback() {
+                            @Override
+                            public void onStart() {
 
-                    }
-                    cursor.close();
-                } else {
-                    Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-                //addShortCut(MainActivity.this);
+                            }
 
-//                PulseChecker.makePulse(MainActivity.this, "com.xinmei365.font/com.xinmei365.font.ui.activity.SplashActivity",
-//                        PulseChecker.CPNT_TYPE_ACTIVITY, 10);
-                //startActivity(new Intent(MainActivity.this, NewAppWidgetConfigureActivity.class));
+                            @Override
+                            public void inProgress(float progress) {
+                                Log.d(TAG, "progress: " + progress);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e(TAG, "request: " + "Exception :" + e);
+                            }
+
+                            @Override
+                            public void onResponse(File response) {
+                                installPackage(getApplicationContext(), response);
+
+                            }
+                        });
             }
         });
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        switch (id) {
-            case R.id.action_demo1:
-                insetDB();
-                break;
-            case R.id.action_demo2:
-                updateDB();
-                break;
-            case R.id.action_demo3:
-                deleteDB();
-                break;
-            case R.id.action_demo4:
-                changeFont();
-                break;
-            case R.id.action_demo5:
 
-                break;
-            case R.id.action_demo6:
-
-                break;
-            case R.id.action_demo7:
-
-                break;
-            case R.id.action_demo8:
-                break;
-            default:
-                break;
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void insetDB() {
-        ContentResolver insertcontentResolver = getContentResolver();
-        Uri uri = Uri.parse("content://com.android.theme.font.db.info/current");
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("uid", 754);
-        contentValues.put("state", 0);
-        contentValues.put("filename", "/data/bbkcore/theme/.dwd/c/o/m/b/b/k/t/h/e/m/e/F/fontthree.txj");
-        contentValues.put("type", 0);
-        contentValues.put("name", "宁平平字体");
-//        contentValues.put("downloadId", 0);
-//        contentValues.put("download_time", 0);
-//        contentValues.put("downloaded_times", null);
-        contentValues.put("praised", -1);
-        contentValues.put("edition", 1);
-        contentValues.put("price", 0);
-        contentValues.put("openid", "vivo");
-        contentValues.put("verify", 1);
 
-        Log.e("######", "insert:=====: " + insertcontentResolver.insert(uri, contentValues));
-        insertcontentResolver.notifyChange(Uri.parse(FONT_URI), null);
-
-    }
-
-    private void updateDB() {
-        ContentResolver insertcontentResolver = getContentResolver();
-        Uri uri = Uri.parse("content://com.android.theme.font.db.info/current");
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("name", "宁平平字体");
-        String whereClause = "_id=?";
-        String[] whereArgs = {"1"};
-        Log.e("######", "upate:=====: " + insertcontentResolver.update(uri, contentValues, whereClause, whereArgs));
-    }
-
-    private void deleteDB() {
-        Log.e("######", "delete:=====: " + getContentResolver().delete(Uri.parse(FONT_URI), null, null));
-    }
-
-    private void changeFont() {
-        File file = new File("/data/bbkcore/theme/.dwd/c/o/m/b/b/k/t/h/e/m/e/F/星空体.txj");
-        if (file.exists()) {
-            mTextView.setTypeface(Typeface.createFromFile(file));
-        } else {
-            Log.e("######", "changeFont:=====: ");
+    public void installPackage(Context context, File apkfile) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                Uri contentUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileProvider", apkfile);//通过FileProvider创建一个content类型的Uri
+                Log.d("MainActivity", contentUri.toString());
+                intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+            } else {
+                intent.setDataAndType(Uri.fromFile(apkfile), "application/vnd.android.package-archive");
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(context, "error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
+
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mPermissionHelper.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onAfterApplyAllPermission() {
+
     }
 }
