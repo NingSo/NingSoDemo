@@ -18,9 +18,9 @@ import java.util.List;
  */
 public class XiaomiHomeBadger implements Badger {
 
-    private static final String INTENT_ACTION = "android.intent.action.APPLICATION_MESSAGE_UPDATE";
-    private static final String EXTRA_UPDATE_APP_COMPONENT_NAME = "android.intent.extra.update_application_component_name";
-    private static final String EXTRA_UPDATE_APP_MSG_TEXT = "android.intent.extra.update_application_message_text";
+    public static final String INTENT_ACTION = "android.intent.action.APPLICATION_MESSAGE_UPDATE";
+    public static final String EXTRA_UPDATE_APP_COMPONENT_NAME = "android.intent.extra.update_application_component_name";
+    public static final String EXTRA_UPDATE_APP_MSG_TEXT = "android.intent.extra.update_application_message_text";
 
     @Override
     public void executeBadge(Context context, ComponentName componentName, int badgeCount) throws ShortcutBadgeException {
@@ -31,7 +31,8 @@ public class XiaomiHomeBadger implements Badger {
             field.setAccessible(true);
             field.set(miuiNotification, String.valueOf(badgeCount == 0 ? "" : badgeCount));
         } catch (Exception e) {
-            Intent localIntent = new Intent(INTENT_ACTION);
+            Intent localIntent = new Intent(
+                    INTENT_ACTION);
             localIntent.putExtra(EXTRA_UPDATE_APP_COMPONENT_NAME, componentName.getPackageName() + "/" + componentName.getClassName());
             localIntent.putExtra(EXTRA_UPDATE_APP_MSG_TEXT, String.valueOf(badgeCount == 0 ? "" : badgeCount));
             if (BroadcastHelper.canResolveBroadcast(context, localIntent)) {

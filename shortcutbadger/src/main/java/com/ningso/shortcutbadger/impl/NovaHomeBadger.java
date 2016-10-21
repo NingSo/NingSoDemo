@@ -11,6 +11,7 @@ import com.ningso.shortcutbadger.ShortcutBadgeException;
 import java.util.Arrays;
 import java.util.List;
 
+
 /**
  * Shortcut Badger support for Nova Launcher.
  * TeslaUnread must be installed.

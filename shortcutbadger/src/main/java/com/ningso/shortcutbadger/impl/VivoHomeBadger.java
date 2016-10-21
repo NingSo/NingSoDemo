@@ -11,21 +11,30 @@ import com.ningso.shortcutbadger.util.BroadcastHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * @author leolin
+ * Created by NingSo on 2016/10/15.上午10:15
+ *
+ * @author: NingSo
+ * @Email: ningso.ping@gmail.com
  */
-public class DefaultBadger implements Badger {
-    private static final String INTENT_ACTION = "android.intent.action.BADGE_COUNT_UPDATE";
-    private static final String INTENT_EXTRA_BADGE_COUNT = "badge_count";
-    private static final String INTENT_EXTRA_PACKAGENAME = "badge_count_package_name";
-    private static final String INTENT_EXTRA_ACTIVITY_NAME = "badge_count_class_name";
+
+public class VivoHomeBadger implements Badger {
+
+    private static final String INTENT_ACTION = "launcher.action.CHANGE_APPLICATION_NOTIFICATION_NUM";
+    private static final String INTENT_EXTRA_BADGE_COUNT = "notificationNum";
+    private static final String INTENT_EXTRA_PACKAGENAME = "packageName";
+    private static final String INTENT_EXTRA_CLASS_NAME = "className";
 
     @Override
     public void executeBadge(Context context, ComponentName componentName, int badgeCount) throws ShortcutBadgeException {
+        if (badgeCount <= 0) {
+            badgeCount = -1;
+        }
         Intent intent = new Intent(INTENT_ACTION);
+        intent.putExtra(INTENT_EXTRA_PACKAGENAME, context.getPackageName());
+        intent.putExtra(INTENT_EXTRA_CLASS_NAME, componentName.getPackageName());
         intent.putExtra(INTENT_EXTRA_BADGE_COUNT, badgeCount);
-        intent.putExtra(INTENT_EXTRA_PACKAGENAME, componentName.getPackageName());
-        intent.putExtra(INTENT_EXTRA_ACTIVITY_NAME, componentName.getClassName());
         if (BroadcastHelper.canResolveBroadcast(context, intent)) {
             context.sendBroadcast(intent);
         } else {
@@ -35,6 +44,6 @@ public class DefaultBadger implements Badger {
 
     @Override
     public List<String> getSupportLaunchers() {
-        return new ArrayList<String>(0);
+        return new ArrayList<>(0);
     }
 }

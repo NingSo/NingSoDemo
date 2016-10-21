@@ -13,6 +13,7 @@ import com.ningso.shortcutbadger.ShortcutBadgeException;
 import java.util.Collections;
 import java.util.List;
 
+
 /**
  * Created by wuxuejian on 2016/10/9.
  * 需在设置 -- 通知和状态栏 -- 应用角标管理 中开启应用
@@ -24,8 +25,7 @@ public class ZukHomeBadger implements Badger {
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
-    public void executeBadge(Context context, ComponentName componentName, int badgeCount)
-            throws ShortcutBadgeException {
+    public void executeBadge(Context context, ComponentName componentName, int badgeCount) throws ShortcutBadgeException {
         Bundle extra = new Bundle();
         extra.putInt("app_badge_count", badgeCount);
         context.getContentResolver().call(CONTENT_URI, "setAppBadgeCount", null, extra);

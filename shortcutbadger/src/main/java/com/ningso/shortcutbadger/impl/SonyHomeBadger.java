@@ -36,7 +36,8 @@ public class SonyHomeBadger implements Badger {
     private AsyncQueryHandler mQueryHandler;
 
     @Override
-    public void executeBadge(Context context, ComponentName componentName, int badgeCount) throws ShortcutBadgeException {
+    public void executeBadge(Context context, ComponentName componentName,
+                             int badgeCount) throws ShortcutBadgeException {
         if (sonyBadgeContentProviderExists(context)) {
             executeBadgeByContentProvider(context, componentName, badgeCount);
         } else {
@@ -49,7 +50,8 @@ public class SonyHomeBadger implements Badger {
         return Arrays.asList("com.sonyericsson.home");
     }
 
-    private static void executeBadgeByBroadcast(Context context, ComponentName componentName, int badgeCount) {
+    private static void executeBadgeByBroadcast(Context context, ComponentName componentName,
+                                                int badgeCount) {
         Intent intent = new Intent(INTENT_ACTION);
         intent.putExtra(INTENT_EXTRA_PACKAGE_NAME, componentName.getPackageName());
         intent.putExtra(INTENT_EXTRA_ACTIVITY_NAME, componentName.getClassName());

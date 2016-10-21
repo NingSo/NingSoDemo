@@ -11,6 +11,7 @@ import com.ningso.shortcutbadger.util.BroadcastHelper;
 import java.util.Arrays;
 import java.util.List;
 
+
 /**
  * @author Gernot Pansy
  */
@@ -23,6 +24,7 @@ public class ApexHomeBadger implements Badger {
 
     @Override
     public void executeBadge(Context context, ComponentName componentName, int badgeCount) throws ShortcutBadgeException {
+
         Intent intent = new Intent(INTENT_UPDATE_COUNTER);
         intent.putExtra(PACKAGENAME, componentName.getPackageName());
         intent.putExtra(COUNT, badgeCount);

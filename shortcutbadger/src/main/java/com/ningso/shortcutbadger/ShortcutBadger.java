@@ -13,11 +13,12 @@ import com.ningso.shortcutbadger.impl.ApexHomeBadger;
 import com.ningso.shortcutbadger.impl.AsusHomeLauncher;
 import com.ningso.shortcutbadger.impl.DefaultBadger;
 import com.ningso.shortcutbadger.impl.HuaweiHomeBadger;
+import com.ningso.shortcutbadger.impl.LenovoHomeBager;
 import com.ningso.shortcutbadger.impl.NewHtcHomeBadger;
 import com.ningso.shortcutbadger.impl.NovaHomeBadger;
 import com.ningso.shortcutbadger.impl.OPPOHomeBader;
-import com.ningso.shortcutbadger.impl.SamsungHomeBadger;
 import com.ningso.shortcutbadger.impl.SonyHomeBadger;
+import com.ningso.shortcutbadger.impl.VivoHomeBadger;
 import com.ningso.shortcutbadger.impl.XiaomiHomeBadger;
 import com.ningso.shortcutbadger.impl.ZukHomeBadger;
 
@@ -32,7 +33,7 @@ public final class ShortcutBadger {
 
     private static final String LOG_TAG = "ShortcutBadger";
 
-    private static final List<Class<? extends Badger>> BADGERS = new LinkedList<Class<? extends Badger>>();
+    private static final List<Class<? extends Badger>> BADGERS = new LinkedList<>();
 
     static {
         BADGERS.add(AdwHomeBadger.class);
@@ -43,9 +44,7 @@ public final class ShortcutBadger {
         BADGERS.add(XiaomiHomeBadger.class);
         BADGERS.add(AsusHomeLauncher.class);
         BADGERS.add(HuaweiHomeBadger.class);
-//        BADGERS.add(LGHomeBadger.class);
         BADGERS.add(OPPOHomeBader.class);
-        BADGERS.add(SamsungHomeBadger.class);
         BADGERS.add(ZukHomeBadger.class);
     }
 
@@ -112,7 +111,9 @@ public final class ShortcutBadger {
     // Initialize Badger if a launcher is availalble (eg. set as default on the device)
     // Returns true if a launcher is available, in this case, the Badger will be set and sShortcutBadger will be non null.
     private static boolean initBadger(Context context) {
+
         sComponentName = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName()).getComponent();
+
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -126,8 +127,7 @@ public final class ShortcutBadger {
             Badger shortcutBadger = null;
             try {
                 shortcutBadger = badger.newInstance();
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception ignored) {
             }
             if (shortcutBadger != null && shortcutBadger.getSupportLaunchers().contains(currentHomePackage)) {
                 sShortcutBadger = shortcutBadger;
@@ -136,13 +136,18 @@ public final class ShortcutBadger {
         }
 
         if (sShortcutBadger == null) {
-            if (Build.MANUFACTURER.equalsIgnoreCase("Xiaomi")) {
+            if (Build.MANUFACTURER.equalsIgnoreCase("Xiaomi"))
                 sShortcutBadger = new XiaomiHomeBadger();
-            } else if (Build.MANUFACTURER.equalsIgnoreCase("ZUK")) {
+            else if (Build.MANUFACTURER.equalsIgnoreCase("ZUK"))
                 sShortcutBadger = new ZukHomeBadger();
-            } else {
+            else if (Build.MANUFACTURER.equalsIgnoreCase("lenovo") && LenovoHomeBager.islenovoLanucher(context))
+                sShortcutBadger = new LenovoHomeBager();
+            else if (Build.MANUFACTURER.equalsIgnoreCase("OPPO"))
+                sShortcutBadger = new OPPOHomeBader();
+            else if (Build.MANUFACTURER.equalsIgnoreCase("vivo"))
+                sShortcutBadger = new VivoHomeBadger();
+            else
                 sShortcutBadger = new DefaultBadger();
-            }
         }
 
         return true;

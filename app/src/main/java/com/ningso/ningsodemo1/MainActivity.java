@@ -1,4 +1,4 @@
-package com.ningso.ningsodemo;
+package com.ningso.ningsodemo1;
 
 import android.content.Context;
 import android.content.Intent;
@@ -23,8 +23,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ningso.ningsodemo.utils.DownLoadHelper;
-import com.ningso.ningsodemo.utils.PermissionHelper;
+import com.ningso.ningsodemo.BuildConfig;
+import com.ningso.ningsodemo.R;
+import com.ningso.ningsodemo1.utils.DownLoadHelper;
+import com.ningso.ningsodemo1.utils.PermissionHelper;
 import com.ningso.shortcutbadger.ShortcutBadger;
 
 import java.io.File;
@@ -54,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements PermissionHelper.
                 Toast.makeText(MainActivity.this, ShortcutBadger.applyCount(MainActivity.this, badgeCount++) ? "badge add success" : "badge add false", Toast.LENGTH_SHORT).show();
             }
         });
-
         update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

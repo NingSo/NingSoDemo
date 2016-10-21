@@ -1,4 +1,4 @@
-package com.ningso.ningsodemo.utils;
+package com.ningso.ningsodemo1.utils;
 
 import android.Manifest;
 import android.app.Activity;
