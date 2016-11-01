@@ -1,9 +1,7 @@
-package com.ningso.ningsodemo1;
+package com.ningso.ningsodemo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,27 +16,19 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ningso.ningsodemo.BuildConfig;
-import com.ningso.ningsodemo.R;
-import com.ningso.ningsodemo1.utils.DownLoadHelper;
-import com.ningso.ningsodemo1.utils.PermissionHelper;
-import com.ningso.shortcutbadger.ShortcutBadger;
+import com.ningso.ningsodemo.utils.DownLoadHelper;
+import com.ningso.ningsodemo.utils.PermissionHelper;
 
 import java.io.File;
-
 
 public class MainActivity extends AppCompatActivity implements PermissionHelper.OnApplyPermissionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     ImageView mImageView;
-    TextView mTextView;
     private PermissionHelper mPermissionHelper;
-    int badgeCount = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,21 +37,7 @@ public class MainActivity extends AppCompatActivity implements PermissionHelper.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mImageView = (ImageView) findViewById(R.id.iv_img);
-        mTextView = (TextView) findViewById(R.id.tv_demo);
-        Button add = (Button) findViewById(R.id.btn_add);
-        Button update = (Button) findViewById(R.id.btn_update);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, ShortcutBadger.applyCount(MainActivity.this, badgeCount++) ? "badge add success" : "badge add false", Toast.LENGTH_SHORT).show();
-            }
-        });
-        update.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, ShortcutBadger.removeCount(MainActivity.this) ? "badge remove success" : "badge remove false", Toast.LENGTH_SHORT).show();
-            }
-        });
+
         mPermissionHelper = new PermissionHelper(this);
         mPermissionHelper.setOnApplyPermissionListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -99,19 +75,11 @@ public class MainActivity extends AppCompatActivity implements PermissionHelper.
                             @Override
                             public void onResponse(File response) {
                                 installPackage(getApplicationContext(), response);
+
                             }
                         });
             }
         });
-        getLuauncher();
-    }
-
-    private void getLuauncher() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        ResolveInfo resolveInfo = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        String currentHomePackage = resolveInfo.activityInfo.packageName;
-        mTextView.setText(currentHomePackage);
     }
 
     @Override
