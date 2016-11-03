@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 
-import com.ningso.ningsodemo.R;
+import static com.ningso.ningsodemo.R.raw.playing;
 
 public class SoundService extends Service {
     private MediaPlayer mp;
@@ -14,7 +14,7 @@ public class SoundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mp = MediaPlayer.create(this, R.raw.playing);
+        mp = MediaPlayer.create(this, playing);
     }
 
     @Override
@@ -26,11 +26,15 @@ public class SoundService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        boolean playing = intent.getBooleanExtra("playing", false);
-        if (playing) {
-            mp.start();
-        } else {
+        if (intent == null) {
             onDestroy();
+        } else {
+            boolean playing = intent.getBooleanExtra("playing", false);
+            if (playing) {
+                mp.start();
+            } else {
+                onDestroy();
+            }
         }
         return super.onStartCommand(intent, flags, startId);
     }

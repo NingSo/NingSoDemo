@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/game_popup_bg"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/win_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:scaleType="centerInside"
+        android:src="@drawable/bg_win"/>
+
+
+    <ImageView
+        android:id="@+id/star_big"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        tools:src="@drawable/star_win_big"/>
+
+    <ImageView
+        android:id="@+id/star_small_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_toLeftOf="@+id/star_big"
+        tools:src="@drawable/star_win_small"/>
+
+    <ImageView
+        android:id="@+id/star_small_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_toRightOf="@+id/star_big"
+        tools:src="@drawable/star_win_small"/>
+
+    <ImageView
+        android:id="@+id/win_flag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btn_next"
+        android:layout_marginBottom="4dp"
+        tools:src="@drawable/img_win"/>
+
+    <ImageView
+        android:id="@+id/btn_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/win_bg"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/btn_next"/>
+</RelativeLayout>

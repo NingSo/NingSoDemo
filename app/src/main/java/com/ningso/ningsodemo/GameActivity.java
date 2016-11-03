@@ -6,10 +6,14 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -54,14 +58,10 @@ public class GameActivity extends AppCompatActivity {
     private static final String MAXGAMETIME = "max-game-time";
     private static final String MAXMEMORYTIME = "max-memory-time";
 
-    public static int[] ImageSource = {R.drawable.image1, R.drawable.image2, R.drawable.image3, R.drawable.image4, R.drawable.image5, R.drawable.image6,
-            R.drawable.image7, R.drawable.image8, R.drawable.image9, R.drawable.image10, R.drawable.image11,
-            R.drawable.image12, R.drawable.image13, R.drawable.image14, R.drawable.image15, R.drawable.image16,
-            R.drawable.image17, R.drawable.image18, R.drawable.image19, R.drawable.image20, R.drawable.image21,
-            R.drawable.image22, R.drawable.image23, R.drawable.image24, R.drawable.image25, R.drawable.image26,
-            R.drawable.image27, R.drawable.image28, R.drawable.image29, R.drawable.image30, R.drawable.image31,
-            R.drawable.image32, R.drawable.image33, R.drawable.image34, R.drawable.image35, R.drawable.image36,
-            R.drawable.image36};
+    public static int[] ImageSource = {R.mipmap.emoji1, R.mipmap.emoji2, R.mipmap.emoji3, R.mipmap.emoji4, R.mipmap.emoji5, R.mipmap.emoji6,
+            R.mipmap.emoji7, R.mipmap.emoji8, R.mipmap.emoji9, R.mipmap.emoji10, R.mipmap.emoji11, R.mipmap.emoji12,
+            R.mipmap.emoji13, R.mipmap.emoji14, R.mipmap.emoji15, R.mipmap.emoji16, R.mipmap.emoji17};
+
 
     private void init() {
         PictureBoxs[0] = (ImageView) findViewById(R.id.ImageView00);
@@ -96,7 +96,7 @@ public class GameActivity extends AppCompatActivity {
                 socore = 0;
                 canTouch = false;
                 tvErrorTimes.setText("错误次数: " + wrongNum);
-                Index = GetIndex.Getnum();
+                Index = CardIndexManager.getIndexNum(12);
 
                 if (alstart != 0) {
                     reset(findViewById(R.id.IV_Group));
@@ -114,8 +114,7 @@ public class GameActivity extends AppCompatActivity {
                 alstart++;
             }
         });
-
-        preferences = getSharedPreferences("CardsGame", MODE_PRIVATE);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         sp_edit = preferences.edit();
 
         setMaxWrongNum = preferences.getInt(MAXWRONGNUMBER, 3);
@@ -131,7 +130,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    public void settingB(View source) {
+    public void setting(View source) {
         final LinearLayout set = (LinearLayout) getLayoutInflater().inflate(R.layout.settings, null);
         EditText etw = (EditText) set.findViewById(R.id.ev_wrongnum);
         EditText ett = (EditText) set.findViewById(R.id.ev_time);
@@ -164,7 +163,7 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
-    void stopmusic() {
+    private void stopMusic() {
         Intent intent = new Intent(GameActivity.this, EffectService.class);
         intent.putExtra("what", "quit");
         startService(intent);
@@ -188,6 +187,43 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopMusic();
+        //downTimer.start();
+    }
+
+    private CountDownTimer mCountDownTimer = new CountDownTimer(60 * 1000, 1000) {
+        @Override
+        public void onTick(long millisUntilFinished) {
+//sendThree.setText((millisUntilFinished / 1000) + "秒");
+        }
+
+        @Override
+        public void onFinish() {
+
+        }
+    };
+
+//    private CountDownTimer downTimer = new CountDownTimer(60 * 1000, 1000) {
+//        @Override
+//        public void onTick(long l) {
+//            runningThree = true;
+//            sendThree.setText((l / 1000) + "秒");
+//        }
+//
+//        @Override
+//        public void onFinish() {
+//            runningThree = false;
+//            sendThree.setText("重新发送");
+//        }
+//    };
 
     private Handler mHandler = new Handler();
 
@@ -216,7 +252,7 @@ public class GameActivity extends AppCompatActivity {
 
     public static void CardTurn() {
         for (int i = 0; i < 12; i++) {
-            PictureBoxs[i].setImageResource(R.drawable.card);
+            PictureBoxs[i].setImageResource(R.mipmap.defultcard);
         }
     }
 
@@ -309,8 +345,8 @@ public class GameActivity extends AppCompatActivity {
                                     mHandler.removeCallbacks(mRunnable);
                                 }
                             } else {
-                                PictureBoxs[ClickID[0]].setImageResource(R.drawable.card);
-                                PictureBoxs[ClickID[1]].setImageResource(R.drawable.card);
+                                PictureBoxs[ClickID[0]].setImageResource(R.mipmap.defultcard);
+                                PictureBoxs[ClickID[1]].setImageResource(R.mipmap.defultcard);
                                 wrongNum++;
                                 if (wrongNum == (setMaxWrongNum + 1)) {
                                     tvErrorTimes.setText("错误次数: " + (wrongNum - 1));
@@ -341,6 +377,28 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            startActivity(new Intent(this, TestActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             doExitGame();
@@ -356,7 +414,7 @@ public class GameActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mHandler.removeCallbacks(mRunnable);
-                        stopmusic();
+                        stopMusic();
                         finish();
                     }
                 })

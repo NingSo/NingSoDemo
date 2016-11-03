@@ -35,22 +35,26 @@ public class EffectService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String what = intent.getStringExtra("what");
-        switch (what) {
-            case "effect":
-                ef.start();
-                break;
-            case "win":
-                win.start();
-                break;
-            case "lose":
-                lose.start();
-                break;
-            case "selected":
-                se.start();
-                break;
-            default:
-                onDestroy();
+        if (intent == null) {
+            onDestroy();
+        } else {
+            String what = intent.getStringExtra("what");
+            switch (what) {
+                case "effect":
+                    ef.start();
+                    break;
+                case "win":
+                    win.start();
+                    break;
+                case "lose":
+                    lose.start();
+                    break;
+                case "selected":
+                    se.start();
+                    break;
+                default:
+                    onDestroy();
+            }
         }
         return super.onStartCommand(intent, flags, startId);
     }

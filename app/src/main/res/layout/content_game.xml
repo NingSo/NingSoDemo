@@ -12,10 +12,11 @@
 
         <LinearLayout
             android:id="@+id/IV_Group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="338dp"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="48dp"
+            android:gravity="center"
             android:orientation="vertical">
 
             <TableRow
@@ -30,7 +31,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView01"
@@ -38,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView02"
@@ -46,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView03"
@@ -54,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
             </TableRow>
 
             <TableRow
@@ -69,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView05"
@@ -77,7 +78,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView06"
@@ -85,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView07"
@@ -93,7 +94,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
             </TableRow>
 
             <TableRow
@@ -108,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView09"
@@ -116,7 +117,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView10"
@@ -124,7 +125,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
 
                 <ImageView
                     android:id="@+id/ImageView11"
@@ -132,7 +133,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="CardTouch"
                     android:padding="8dp"
-                    android:src="@drawable/card"/>
+                    tools:src="@mipmap/defultcard"/>
             </TableRow>
         </LinearLayout>
 
@@ -184,7 +185,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/text_margin"
                     android:layout_marginRight="@dimen/text_margin"
-                    android:onClick="settingB"
+                    android:onClick="setting"
                     android:padding="4dp"
                     android:text="设置"/>
 

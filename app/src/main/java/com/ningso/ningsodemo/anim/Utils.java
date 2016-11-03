@@ -26,8 +26,6 @@ import android.widget.ImageView;
 
 class Utils {
 
-    private Utils() {
-    }
 
     private static final float DENSITY = Resources.getSystem().getDisplayMetrics().density;
     private static final Canvas sCanvas = new Canvas();
@@ -57,7 +55,7 @@ class Utils {
         return bitmap;
     }
 
-    public static Bitmap createBitmapSafely(int width, int height, Bitmap.Config config, int retryCount) {
+    private static Bitmap createBitmapSafely(int width, int height, Bitmap.Config config, int retryCount) {
         try {
             return Bitmap.createBitmap(width, height, config);
         } catch (OutOfMemoryError e) {

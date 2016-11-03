@@ -3,4 +3,5 @@
     <color name="colorPrimary">#38A1FB</color>
     <color name="colorPrimaryDark">#3891FB</color>
     <color name="colorAccent">#38A1FB</color>
+    <color name="game_popup_bg">#b30b165a</color>
 </resources>

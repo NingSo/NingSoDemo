@@ -40,12 +40,11 @@ public class ExplosionField extends View {
     private int[] mExpandInset = new int[2];
 
     public ExplosionField(Context context) {
-        super(context);
-        init();
+        this(context, null);
     }
 
     public ExplosionField(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
         init();
     }
 
@@ -92,7 +91,7 @@ public class ExplosionField extends View {
         getLocationOnScreen(location);
         r.offset(location[0], -location[1]);
         r.inset(-mExpandInset[0], -mExpandInset[1]);
-        int startDelay = 100;
+        int startDelay = 200;
         ValueAnimator animator = ValueAnimator.ofFloat(new float[]{0f, 1f}).setDuration(150);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
@@ -118,8 +117,7 @@ public class ExplosionField extends View {
     public static ExplosionField attach2Window(Activity activity) {
         ViewGroup rootView = (ViewGroup) activity.findViewById(Window.ID_ANDROID_CONTENT);
         ExplosionField explosionField = new ExplosionField(activity);
-        rootView.addView(explosionField, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        rootView.addView(explosionField, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         return explosionField;
     }
 
