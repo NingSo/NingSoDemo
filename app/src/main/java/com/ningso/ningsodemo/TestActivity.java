@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -31,15 +32,15 @@ public class TestActivity extends AppCompatActivity {
 
     RecyclerView mRecyclerView;
     GridLayoutManager mGridLayoutManager;
-    int[] mIntegerList;
+
     CardRecyclerViewAdapter mCardRecyclerViewAdapter;
     private ExplosionField mExplosionField;
-
     private TextView mTimeTextView;
     private LinkCountDownView mLinkCountDownView;
 
     private int clickCount = 0; //点击次数
     private int[] ClickID = new int[2]; //记录两次分别点击的ID
+    int[] mIntegerList;
     long alartTime;//总耗时
     private long defaultTime = 5 * 1000;
     private int socore = 0;
@@ -57,37 +58,33 @@ public class TestActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+        initView();
+        startGame();
+    }
+
+    private void initView() {
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerlist);
         mTimeTextView = (TextView) findViewById(R.id.tv_timeset);
         contentView = findViewById(R.id.activity_test);
         mLinkCountDownView = (LinkCountDownView) findViewById(R.id.countdownview);
-
-        mIntegerList = CardIndexManager.getIndexNum(18);
         mGridLayoutManager = new GridLayoutManager(this, 6);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
-        mCardRecyclerViewAdapter = new CardRecyclerViewAdapter();
-        mRecyclerView.addItemDecoration(new SpacingDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()),
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()), false));
-        mRecyclerView.setAdapter(mCardRecyclerViewAdapter);
-        mExplosionField = ExplosionField.attach2Window(this);
-        startGame();
-        // mHandler.postDelayed(mRunnable, 5000);
+        mRecyclerView.addItemDecoration(new SpacingDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()), (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()), false));
     }
 
     private void startGame() {
-
+        mRecyclerView.setVisibility(View.INVISIBLE);
         mLinkCountDownView.start(3, 0, 2500, new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                if (mCardRecyclerViewAdapter != null) {
-                    mExplosionField.clear();
-                    isPreView = false;
-                    mIntegerList = CardIndexManager.getIndexNum(18);
-                    mCardRecyclerViewAdapter.notifyDataSetChanged();
-                    mRecyclerView.requestLayout();
-                    mCountDownTimer.start();
-                }
+                mRecyclerView.setVisibility(View.VISIBLE);
+                isPreView = true;
+                mExplosionField = ExplosionField.attach2Window(TestActivity.this);
+                mIntegerList = CardIndexManager.getIndexNum(18);
+                mCardRecyclerViewAdapter = new CardRecyclerViewAdapter();
+                mRecyclerView.setAdapter(mCardRecyclerViewAdapter);
+                mHandler.postDelayed(mRunnable, 3000);
             }
         });
     }
@@ -97,6 +94,7 @@ public class TestActivity extends AppCompatActivity {
             if (isPreView) {
                 isPreView = false;
                 mCardRecyclerViewAdapter.notifyDataSetChanged();
+                mCountDownTimer.start();
             }
         }
     };
@@ -154,6 +152,7 @@ public class TestActivity extends AppCompatActivity {
         }
     };
 
+
     class CardRecyclerViewAdapter extends RecyclerView.Adapter<CardRecyclerViewAdapter.CardViewHolder> {
         CardViewHolder mPreViewHolder;
 
@@ -193,20 +192,37 @@ public class TestActivity extends AppCompatActivity {
                             if (ClickID[0] != ClickID[1] && mIntegerList[ClickID[0]] == mIntegerList[ClickID[1]]) {
                                 mExplosionField.explode(mPreViewHolder.ivCard);
                                 mExplosionField.explode(holder.ivCard);
-
                                 mPreViewHolder.ivCard.setOnClickListener(null);
                                 holder.ivCard.setOnClickListener(null);
-
                                 socore++;
                                 if (socore == 9) {
+                                    socore = 0;
                                     Toast.makeText(v.getContext(), "胜利", Toast.LENGTH_SHORT).show();
                                 }
                                 clickCount = 0;
                             } else if (ClickID[0] == ClickID[1]) {
                                 clickCount = 1;
                             } else {
-                                notifyItemChanged(ClickID[0]);
-                                notifyItemChanged(ClickID[1]);
+                                Animation shake = AnimationUtils.loadAnimation(v.getContext(), R.anim.shake);
+                                shake.setAnimationListener(new Animation.AnimationListener() {
+                                    @Override
+                                    public void onAnimationStart(Animation animation) {
+                                        canTouch = false;
+                                    }
+
+                                    @Override
+                                    public void onAnimationEnd(Animation animation) {
+                                        notifyItemChanged(ClickID[0]);
+                                        notifyItemChanged(ClickID[1]);
+                                    }
+
+                                    @Override
+                                    public void onAnimationRepeat(Animation animation) {
+
+                                    }
+                                });
+                                mPreViewHolder.ivCard.startAnimation(shake);
+                                holder.ivCard.startAnimation(shake);
                                 clickCount = 0;
                             }
                         }
@@ -216,10 +232,9 @@ public class TestActivity extends AppCompatActivity {
         }
 
         private synchronized void startFlipCardAnim(final ImageView view) {
-
-            Rotate3dAnimation openAnimation = new Rotate3dAnimation(0, 90, view.getWidth() / 2, view.getHeight() / 2, 50, false);
+            Rotate3dAnimation openAnimation = new Rotate3dAnimation(0, 90, view.getWidth() / 2, view.getHeight() / 2, 50, true);
             openAnimation.setDuration(320);
-//            openAnimation.setFillAfter(true);
+            openAnimation.setFillAfter(true);
             openAnimation.setInterpolator(new AccelerateInterpolator());
             openAnimation.setAnimationListener(new Animation.AnimationListener() {
 
@@ -232,8 +247,8 @@ public class TestActivity extends AppCompatActivity {
                 public void onAnimationEnd(Animation animation) {
                     canTouch = true;
                     Rotate3dAnimation rotateAnimation = new Rotate3dAnimation(270, 360, view.getWidth() / 2, view.getHeight() / 2, 50, false);
-                    rotateAnimation.setDuration(320);
-//                    rotateAnimation.setFillAfter(true);
+                    rotateAnimation.setDuration(150);
+                    rotateAnimation.setFillAfter(true);
                     rotateAnimation.setInterpolator(new DecelerateInterpolator());
                     view.startAnimation(rotateAnimation);
                 }
