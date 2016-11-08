@@ -3,17 +3,8 @@ package com.ningso.ningsodemo.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import com.ningso.ningsodemo.R;
-
-/**
- * Created by NingSo on 2016/11/3.下午7:34
- *
- * @author: NingSo
- * @Email: ningso.ping@gmail.com
- */
 
 public class StartLists extends LinearLayout {
     public StartLists(Context context) {
@@ -33,7 +24,8 @@ public class StartLists extends LinearLayout {
         if (this.getChildCount() != 3) {
             super.onLayout(changed, l, t, r, b);
         } else {
-            int paddingRight = ((ViewGroup) this.getParent()).findViewById(R.id.time).getWidth();
+//            int paddingRight = ((ViewGroup) this.getParent()).findViewById(R.id.time).getWidth();
+            int paddingRight = 0;
             this.layoutOne(this.getChildAt(0), r - l - paddingRight, b - t, 25);
             this.layoutOne(this.getChildAt(1), r - l - paddingRight, b - t, 50);
             this.layoutOne(this.getChildAt(2), r - l - paddingRight, b - t, 75);

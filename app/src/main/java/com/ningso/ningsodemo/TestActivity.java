@@ -2,52 +2,57 @@ package com.ningso.ningsodemo;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ningso.ningsodemo.anim.ExplosionField;
 import com.ningso.ningsodemo.anim.Rotate3dAnimation;
-import com.xinmei365.litegame.link.LinkCountDownView;
+import com.ningso.ningsodemo.widgets.LinkCountDownView;
 
-public class TestActivity extends AppCompatActivity {
+public class TestActivity extends Activity {
 
-    RecyclerView mRecyclerView;
-    GridLayoutManager mGridLayoutManager;
-
-    CardRecyclerViewAdapter mCardRecyclerViewAdapter;
+    //view
+    private RecyclerView mRecyclerView;
+    private GridLayoutManager mGridLayoutManager;
+    private CardRecyclerViewAdapter mCardRecyclerViewAdapter;
     private ExplosionField mExplosionField;
     private TextView mTimeTextView;
     private LinkCountDownView mLinkCountDownView;
+    private ProgressBar mProgressBar;
+    private ImageView[] stars;
+    private ImageView closeBtn;
 
     private int clickCount = 0; //点击次数
     private int[] ClickID = new int[2]; //记录两次分别点击的ID
-    int[] mIntegerList;
-    long alartTime;//总耗时
-    private long defaultTime = 5 * 1000;
+    private int[] mIntegerList;
+    private long alartTime;//总耗时
+    private long defaultTime = 60 * 1000;
     private int socore = 0;
     private View contentView;
     private boolean isPreView = true;
     private boolean canTouch;
-
+    int starCount;
     public static int[] ImageSources = {R.mipmap.emoji1, R.mipmap.emoji2, R.mipmap.emoji3, R.mipmap.emoji4, R.mipmap.emoji5, R.mipmap.emoji6,
             R.mipmap.emoji7, R.mipmap.emoji8, R.mipmap.emoji9, R.mipmap.emoji10, R.mipmap.emoji11, R.mipmap.emoji12,
             R.mipmap.emoji13, R.mipmap.emoji14, R.mipmap.emoji15, R.mipmap.emoji16, R.mipmap.emoji17};
@@ -64,16 +69,34 @@ public class TestActivity extends AppCompatActivity {
 
     private void initView() {
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerlist);
-        mTimeTextView = (TextView) findViewById(R.id.tv_timeset);
+        mTimeTextView = (TextView) findViewById(R.id.time);
         contentView = findViewById(R.id.activity_test);
         mLinkCountDownView = (LinkCountDownView) findViewById(R.id.countdownview);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        stars = new ImageView[]{(ImageView) findViewById(R.id.star1),
+                (ImageView) findViewById(R.id.star2),
+                (ImageView) findViewById(R.id.star3)};
         mGridLayoutManager = new GridLayoutManager(this, 6);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
-        mRecyclerView.addItemDecoration(new SpacingDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()), (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()), false));
+        mRecyclerView.addItemDecoration(new SpacingDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()),
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics()), false));
+        closeBtn = (ImageView) findViewById(R.id.iv_close);
+        closeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        setTimeLeft(60);
     }
 
     private void startGame() {
         mRecyclerView.setVisibility(View.INVISIBLE);
+        socore = 0;
+        alartTime = 0;
+        clickCount = 0;
+        ClickID = new int[2];
+        setTimeLeft(60);
         mLinkCountDownView.start(3, 0, 2500, new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -89,6 +112,34 @@ public class TestActivity extends AppCompatActivity {
         });
     }
 
+    private void setTimeLeft(int seconds) {
+        mProgressBar.setProgress(seconds * 100 / 60);
+        mTimeTextView.setText(String.format("%02d", seconds));
+        if (seconds == 60) {
+            for (ImageView star : stars) {
+                star.setImageResource(R.drawable.star_win_small);
+            }
+            starCount = 3;
+        } else if (seconds == 0) {
+            showLosePopupWindow();
+        } else {
+            if (seconds < 15 && starCount > 0) {
+                grayStar(0);
+            }
+            if (seconds < 30 && starCount > 1) {
+                grayStar(1);
+            }
+            if (seconds < 45 && starCount > 2) {
+                grayStar(2);
+            }
+        }
+    }
+
+    private void grayStar(int n) {
+        starCount = n;
+        stars[n].setImageResource(R.drawable.star_lose_small_gray);
+    }
+
     private Runnable mRunnable = new Runnable() {
         public void run() {
             if (isPreView) {
@@ -100,25 +151,13 @@ public class TestActivity extends AppCompatActivity {
     };
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME || super.onKeyDown(keyCode, event);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            startGame();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -128,13 +167,70 @@ public class TestActivity extends AppCompatActivity {
     }
 
 
-    private void showPopwindow() {
-        LayoutInflater mLayoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popView = mLayoutInflater.inflate(R.layout.game_fail, null);
-        final PopupWindow popWindow = new PopupWindow(popView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        popWindow.setFocusable(true);
+    private void showSuccessPopwindow(int starCount) {
+        View popView = getLayoutInflater().inflate(R.layout.game_win, null);
+        ImageView IvNext = (ImageView) popView.findViewById(R.id.btn_next);
+        ImageView[] stars = new ImageView[]{
+                (ImageView) popView.findViewById(R.id.star1),
+                (ImageView) popView.findViewById(R.id.star2),
+                (ImageView) popView.findViewById(R.id.star3)
+        };
+        for (int i = 0; i < starCount; i++) {
+            if (i == 1) {
+                stars[i].setImageResource(R.drawable.star_win_big);
+            } else {
+                stars[i].setImageResource(R.drawable.star_win_small);
+            }
+        }
+        final PopupWindow popWindow = new PopupWindow(popView);
+        popWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        popWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        popWindow.setHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 272, getResources().getDisplayMetrics()));
+        popWindow.setFocusable(false);
         popWindow.setOutsideTouchable(false);
-        popWindow.showAsDropDown(contentView, 0, 0);
+        popView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return event.getAction() == MotionEvent.ACTION_OUTSIDE || event.getAction() == KeyEvent.KEYCODE_BACK;
+            }
+        });
+        popWindow.showAtLocation(contentView, Gravity.BOTTOM | Gravity.CENTER, 0, 0);
+        IvNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (popWindow.isShowing()) {
+                    popWindow.dismiss();
+                }
+                startGame();
+            }
+        });
+    }
+
+    private void showLosePopupWindow() {
+        View popView = getLayoutInflater().inflate(R.layout.game_fail, null);
+        ImageView ivReplay = (ImageView) popView.findViewById(R.id.btn_replay);
+        final PopupWindow popWindow = new PopupWindow(popView);
+        popWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        popWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        popWindow.setHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 272, getResources().getDisplayMetrics()));
+        popWindow.setFocusable(false);
+        popWindow.setOutsideTouchable(false);
+        popView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return event.getAction() == MotionEvent.ACTION_OUTSIDE || event.getAction() == KeyEvent.KEYCODE_BACK;
+            }
+        });
+        popWindow.showAtLocation(contentView, Gravity.BOTTOM | Gravity.CENTER, 0, 0);
+        ivReplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (popWindow.isShowing()) {
+                    popWindow.dismiss();
+                }
+                startGame();
+            }
+        });
     }
 
 
@@ -143,12 +239,14 @@ public class TestActivity extends AppCompatActivity {
         public void onTick(long millisUntilFinished) {
             Log.e("", "alartTime: " + millisUntilFinished);
             alartTime = millisUntilFinished / 1000;
-            mTimeTextView.setText(alartTime < 10 ? "0" + alartTime : "" + alartTime);
+            if (alartTime > 0) {
+                setTimeLeft((int) alartTime);
+            }
         }
 
         @Override
         public void onFinish() {
-            mTimeTextView.setText("00");
+            setTimeLeft(0);
         }
     };
 
@@ -163,7 +261,6 @@ public class TestActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final CardViewHolder holder, final int position) {
-            Log.e("@@", "ImageSources: " + ImageSources[mIntegerList[position]] + " mIntegerList[position]: " + mIntegerList[position]);
             if (isPreView) {
                 holder.ivCard.setImageResource(ImageSources[mIntegerList[position]]);
             } else {
@@ -197,7 +294,12 @@ public class TestActivity extends AppCompatActivity {
                                 socore++;
                                 if (socore == 9) {
                                     socore = 0;
-                                    Toast.makeText(v.getContext(), "胜利", Toast.LENGTH_SHORT).show();
+                                    if (starCount < 1) {
+                                        showLosePopupWindow();
+                                    } else {
+                                        showSuccessPopwindow(starCount);
+                                    }
+                                    mCountDownTimer.cancel();
                                 }
                                 clickCount = 0;
                             } else if (ClickID[0] == ClickID[1]) {
