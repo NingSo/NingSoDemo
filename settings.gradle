@@ -1,1 +1,1 @@
-include ':app', ':fliplibrary'
+include ':app'
